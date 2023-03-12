@@ -9,7 +9,8 @@ on:
     branches: [ "main", "tobias" ]
     paths:
       - 'src/Nowy.Database*/**'
-#      - '.github/**'
+      - '_build/**'
+      - '.github/**'
   workflow_dispatch:
 
 permissions:

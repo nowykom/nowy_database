@@ -51,6 +51,10 @@
           "type": "string",
           "default": "Secrets must be entered via 'nuke :secrets [profile]'"
         },
+        "NuGetOrgApiKey": {
+          "type": "string",
+          "default": "Secrets must be entered via 'nuke :secrets [profile]'"
+        },
         "Partition": {
           "type": "string",
           "description": "Partition to use on CI"
@@ -78,6 +82,7 @@
             "enum": [
               "CiGithubActionsLinux",
               "Clean",
+              "ClearCache",
               "Compile",
               "CreateNugetPackages",
               "Deploy",
@@ -99,6 +104,7 @@
             "enum": [
               "CiGithubActionsLinux",
               "Clean",
+              "ClearCache",
               "Compile",
               "CreateNugetPackages",
               "Deploy",

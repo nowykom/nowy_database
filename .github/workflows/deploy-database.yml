@@ -43,6 +43,7 @@ jobs:
         run: cd nowy_database; export PATH="$PATH:$HOME/.dotnet/tools"; ./build.cmd Deploy
         env:
           NuGetAzureDevOpsPassword: ${{ secrets.NUGET_AZUREDEVOPS_PASSWORD }}
+          NuGetOrgApiKey: ${{ secrets.NUGET_ORG_APIKEY }}
 
       - name: Publish
         run: rm -rf ./myapp ; dotnet publish -c Release -r linux-x64 -o ./myapp nowy_database/src/Nowy.Database.Web/Nowy.Database.Web.csproj

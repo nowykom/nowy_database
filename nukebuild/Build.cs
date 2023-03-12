@@ -30,7 +30,7 @@ class Build : NukeBuild
     [GitRepository] readonly GitRepository GitRepository;
     [Solution] readonly Solution Solution;
 
-    public static int Main() => Execute<Build>(x => x.Compile);
+    public static int Main() => Execute<Build>(x => x.Upgrade, x => x.Compile);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
@@ -43,7 +43,7 @@ class Build : NukeBuild
     string NuGetAzureDevOpsSource => "https://pkgs.dev.azure.com/schulz-dev/nowy/_packaging/Nowy/nuget/v3/index.json";
     string NuGetAzureDevOpsUser => "schulz-dev";
     [Parameter] [Secret] string NuGetAzureDevOpsPassword;
-    
+
     protected override void OnBuildInitialized()
     {
         /*
@@ -68,6 +68,32 @@ class Build : NukeBuild
         Log.Information("BUILD SETUP");
         Log.Information("Configuration:\t{Configuration}", Configuration);
     }
+
+    Target Upgrade => _ => _
+        .Before(Restore)
+        .Executes(() =>
+        {
+// dotnet tool install --global dotnet-outdated-tool
+            try
+            {
+                DotNetTasks.DotNetToolInstall(
+                    _ => _
+                        .SetPackageName("dotnet-outdated-tool")
+                        .EnableGlobal()
+                );
+            }
+            catch (Exception)
+            {
+                DotNetTasks.DotNetToolUpdate(
+                    _ => _
+                        .SetPackageName("dotnet-outdated-tool")
+                        .EnableGlobal()
+                );
+            }
+
+
+            DotNetTasks.DotNet("outdated --upgrade", RootDirectory / "src");
+        });
 
     Target Clean => _ => _
         .Before(Restore)
@@ -156,11 +182,14 @@ class Build : NukeBuild
         });
 
 
+    Target Pack => _ => _
+        .DependsOn(Upgrade, CreateNugetPackages);
+
     Target CiGithubActionsLinux => _ => _
-        .DependsOn(CreateNugetPackages);
+        .DependsOn(Upgrade, CreateNugetPackages);
 
     Target Deploy => _ => _
-        .DependsOn(Compile)
+        .DependsOn(Upgrade, Compile)
         .Executes(() =>
         {
         });

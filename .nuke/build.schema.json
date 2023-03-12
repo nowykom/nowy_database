@@ -81,7 +81,9 @@
               "Compile",
               "CreateNugetPackages",
               "Deploy",
-              "Restore"
+              "Pack",
+              "Restore",
+              "Upgrade"
             ]
           }
         },
@@ -100,7 +102,9 @@
               "Compile",
               "CreateNugetPackages",
               "Deploy",
-              "Restore"
+              "Pack",
+              "Restore",
+              "Upgrade"
             ]
           }
         },

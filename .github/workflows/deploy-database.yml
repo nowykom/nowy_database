@@ -40,7 +40,7 @@ jobs:
         run: cp nowy_database/global.json .
 
       - name: Run './build.cmd Deploy'
-        run: cd nowy_database; ./build.cmd Deploy
+        run: cd nowy_database; export PATH="$PATH:$HOME/.dotnet/tools"; ./build.cmd Deploy
         env:
           NuGetAzureDevOpsPassword: ${{ secrets.NUGET_AZUREDEVOPS_PASSWORD }}
 

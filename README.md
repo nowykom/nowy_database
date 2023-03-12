@@ -1,1 +1,1 @@
-# nowy_core
+# nowy_database

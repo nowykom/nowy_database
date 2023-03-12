@@ -9,7 +9,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'src/Nowy.Database*/**'
-      - '_build/**'
+      - 'nukebuild/**'
       - '.github/**'
   workflow_dispatch:
 

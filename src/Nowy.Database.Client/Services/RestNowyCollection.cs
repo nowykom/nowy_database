@@ -8,15 +8,17 @@ namespace Nowy.Database.Client.Services;
 public sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where TModel : class, IBaseModel
 {
     private readonly HttpClient _http_client;
+    private readonly IModelService _model_service;
     private readonly string _endpoint;
     private readonly string _database_name;
     private readonly string _entity_name;
 
     private static readonly JsonSerializerOptions _json_options = new JsonSerializerOptions() { PropertyNamingPolicy = null, };
 
-    public RestNowyCollection(HttpClient http_client, string endpoint, string database_name, string entity_name)
+    public RestNowyCollection(HttpClient http_client, IModelService model_service, string endpoint, string database_name, string entity_name)
     {
         _http_client = http_client;
+        _model_service = model_service;
         _endpoint = endpoint;
         _database_name = database_name;
         _entity_name = entity_name;
@@ -48,6 +50,7 @@ public sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where T
         using HttpResponseMessage response = await _http_client.PostAsJsonAsync($"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{uuid}", model, options: _json_options);
         await using Stream stream = await response.Content.ReadAsStreamAsync();
         TModel? result = await JsonSerializer.DeserializeAsync<TModel>(stream, options: _json_options);
+        _model_service.SendModelUpdated(model);
         return result ?? throw new ArgumentNullException(nameof(result));
     }
 

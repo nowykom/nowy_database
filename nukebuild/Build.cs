@@ -44,6 +44,7 @@ class Build : NukeBuild
     string NuGetAzureDevOpsUser => "schulz-dev";
     [Parameter] [Secret] string NuGetAzureDevOpsPassword;
 
+    
     protected override void OnBuildInitialized()
     {
         /*

@@ -80,6 +80,7 @@
               "Clean",
               "Compile",
               "CreateNugetPackages",
+              "Deploy",
               "Restore"
             ]
           }
@@ -98,6 +99,7 @@
               "Clean",
               "Compile",
               "CreateNugetPackages",
+              "Deploy",
               "Restore"
             ]
           }

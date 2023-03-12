@@ -21,9 +21,6 @@ jobs:
     runs-on: [self-hosted, linux]
 
     steps:
-      - name: Cleanup
-        run: sudo rm -rf /tmp/NuGetScratch ; dotnet nuget locals all --clear
-
       - uses: actions/checkout@v3
         with:
           path: nowy_database

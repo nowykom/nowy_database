@@ -158,4 +158,10 @@ class Build : NukeBuild
 
     Target CiGithubActionsLinux => _ => _
         .DependsOn(CreateNugetPackages);
+
+    Target Deploy => _ => _
+        .DependsOn(Compile)
+        .Executes(() =>
+        {
+        });
 }

@@ -92,7 +92,7 @@ class Build : NukeBuild
             }
 
 
-            DotNetTasks.DotNet("outdated --upgrade", RootDirectory / "src");
+            DotNetTasks.DotNet($"outdated --upgrade {RootDirectory / "src"}");
         });
 
     Target Clean => _ => _

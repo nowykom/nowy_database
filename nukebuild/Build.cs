@@ -72,11 +72,19 @@ class Build : NukeBuild
         Log.Information("Configuration:\t{Configuration}", Configuration);
     }
 
-    Target Upgrade => _ => _
-        .Before(Restore)
+    Target ClearCache => _ => _
         .Executes(() =>
         {
-// dotnet tool install --global dotnet-outdated-tool
+            DotNetTasks.DotNet($"nuget locals http-cache --clear");
+            DotNetTasks.DotNet($"nuget locals plugins-cache --clear");
+            DotNetTasks.DotNet($"nuget locals temp --clear");
+        });
+
+    Target Upgrade => _ => _
+        .Before(Restore)
+        .DependsOn(ClearCache)
+        .Executes(() =>
+        {
             try
             {
                 DotNetTasks.DotNetToolInstall(

@@ -91,7 +91,6 @@ class Build : NukeBuild
                 );
             }
 
-
             DotNetTasks.DotNet($"outdated --upgrade {RootDirectory / "src"}");
         });
 
@@ -133,6 +132,7 @@ class Build : NukeBuild
             string[] projects = new[]
             {
                 "Nowy.Database.Client",
+                "Nowy.Database.Contract",
             };
 
             foreach (string project in projects)

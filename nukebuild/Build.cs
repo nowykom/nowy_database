@@ -110,6 +110,7 @@ class Build : NukeBuild
         .Executes(() =>
         {
             SourceDirectory.GlobDirectories("**/bin", "**/obj", "**/node_modules").ForEach(DeleteDirectory);
+            SourceDirectory.GlobFiles("**/*.stamp").ForEach(DeleteFile);
             EnsureCleanDirectory(ArtifactsDirectory);
         });
 

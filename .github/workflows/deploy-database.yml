@@ -63,3 +63,7 @@ jobs:
 
       - name: Upload (fix permissions)
         run: ssh root@nowy01.server.nowykom.de 'chown www-data:www-data -R /srv/nowy_database/ ; service nowy_database_'${BRANCH}' restart '
+
+      - name: Cleanup
+        if: always()
+        run: rm -rf nowy_database

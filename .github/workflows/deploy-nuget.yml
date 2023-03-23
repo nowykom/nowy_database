@@ -46,3 +46,6 @@ jobs:
           NuGetAzureDevOpsPassword: ${{ secrets.NUGET_AZUREDEVOPS_PASSWORD }}
           NuGetOrgApiKey: ${{ secrets.NUGET_ORG_APIKEY }}
 
+      - name: Cleanup
+        if: always()
+        run: rm -rf nowy_database

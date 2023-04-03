@@ -5,12 +5,19 @@ namespace Nowy.Database.Client.Services;
 public sealed class RestNowyDatabase : INowyDatabase
 {
     private readonly HttpClient _http_client;
+    private readonly INowyDatabaseAuthService _database_auth_service;
     private readonly IModelService _model_service;
     private readonly string _endpoint;
 
-    public RestNowyDatabase(IHttpClientFactory http_client_factory, IModelService model_service, string endpoint)
+    public RestNowyDatabase(
+        IHttpClientFactory http_client_factory,
+        INowyDatabaseAuthService database_auth_service,
+        IModelService model_service,
+        string endpoint
+    )
     {
         _http_client = http_client_factory.CreateClient("");
+        _database_auth_service = database_auth_service;
         _model_service = model_service;
         _endpoint = endpoint;
     }
@@ -19,6 +26,7 @@ public sealed class RestNowyDatabase : INowyDatabase
     {
         return new RestNowyCollection<TModel>(
             _http_client,
+            _database_auth_service,
             _model_service,
             _endpoint,
             database_name: database_name,

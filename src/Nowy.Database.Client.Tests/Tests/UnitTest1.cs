@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Nowy.Database.Client.Services;
+using Nowy.Database.Client.Tests.Tests;
 using Nowy.Database.Contract.Models;
 
 namespace Nowy.Database.Client.Tests;
@@ -15,7 +16,7 @@ public class UnitTest1
         services.AddHttpClient();
 
         string endpoint = "https://main.database.nowykom.de";
-        services.AddNowyDatabaseClient(endpoint: endpoint);
+        services.AddNowyDatabaseClient(endpoint, sp => new MockDatabaseAuthService());
 
         _sp = services.BuildServiceProvider();
     }

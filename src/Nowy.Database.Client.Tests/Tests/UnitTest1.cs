@@ -16,7 +16,7 @@ public class UnitTest1
         services.AddHttpClient();
 
         string endpoint = "https://main.database.nowykom.de";
-        services.AddNowyDatabaseClient(endpoint, sp => new MockDatabaseAuthService());
+        services.AddNowyDatabaseClient(endpoint: endpoint, sp => new MockDatabaseAuthService());
 
         _sp = services.BuildServiceProvider();
     }

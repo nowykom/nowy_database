@@ -7,7 +7,7 @@ using Nowy.Standard;
 
 namespace Nowy.Database.Client;
 
-public static class NowyDatabaseClientExtensions
+public static class ServiceCollectionExtensions
 {
     public static void AddNowyDatabaseClient(this IServiceCollection services, string endpoint, Func<IServiceProvider, INowyDatabaseAuthService> func_database_auth_service)
     {

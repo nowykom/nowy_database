@@ -5,6 +5,7 @@ using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.IdGenerators;
 using MongoDB.Driver;
+using Nowy.Database.Contract.Models;
 using Nowy.Database.Web.Endpoints;
 using Nowy.Database.Web.Services;
 using Nowy.Standard;
@@ -20,9 +21,8 @@ BsonSerializer.RegisterSerializer(typeof(UnixTimestamp), new MongoUnixTimestampS
 builder.Services.AddSingleton<IMongoClient>(sp =>
     new MongoClient(builder.Configuration.GetConnectionString("MongoDb"))
 );
-builder.Services.AddSingleton<MongoRepository>(sp =>
-    new MongoRepository(sp.GetRequiredService<IMongoClient>())
-);
+builder.Services.AddSingleton<MongoRepository>();
+builder.Services.AddSingleton<INowyDatabase, MongoNowyDatabase>();
 
 builder.Services.AddSingleton<ApiEndpointsV1>();
 

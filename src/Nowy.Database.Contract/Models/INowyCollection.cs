@@ -1,6 +1,4 @@
-using Nowy.Database.Contract.Models;
-
-namespace Nowy.Database.Client.Services;
+namespace Nowy.Database.Contract.Models;
 
 public interface INowyCollection<TModel> where TModel : class, IBaseModel
 {

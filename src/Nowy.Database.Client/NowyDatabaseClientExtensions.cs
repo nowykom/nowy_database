@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Nowy.Database.Client.Services;
+using Nowy.Database.Contract.Models;
 using Nowy.Standard;
 
 namespace Nowy.Database.Client;

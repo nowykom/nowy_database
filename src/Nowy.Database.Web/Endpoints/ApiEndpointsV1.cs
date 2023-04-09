@@ -8,7 +8,7 @@ namespace Nowy.Database.Web.Endpoints;
 
 public class ApiEndpointsV1
 {
-    private readonly ILogger<ApiEndpointsV1> _logger;
+    private readonly ILogger _logger;
 
     public ApiEndpointsV1(ILogger<ApiEndpointsV1> logger)
     {
@@ -30,7 +30,7 @@ public class ApiEndpointsV1
 
         List<BsonDocument> list = await repo.GetAllAsync(database_name: database_name, entity_name: entity_name);
 
-        MemoryStream stream = await list.MongoToJsonStream();
+        await using MemoryStream stream = await list.MongoToJsonStream();
         return TypedResults.Bytes(stream.ToArray(), "application/json");
     }
 
@@ -42,7 +42,7 @@ public class ApiEndpointsV1
 
         if (document is { })
         {
-            MemoryStream stream = await document.MongoToJsonStream();
+            await using MemoryStream stream = await document.MongoToJsonStream();
             return TypedResults.Bytes(stream.ToArray(), "application/json");
         }
         else
@@ -55,7 +55,7 @@ public class ApiEndpointsV1
         HttpRequest request)
     {
         string input_json;
-        using (MemoryStream input_json_stream = new MemoryStream(2048))
+        await using (MemoryStream input_json_stream = new MemoryStream(2048))
         {
             await request.Body.CopyToAsync(input_json_stream);
             input_json = Encoding.UTF8.GetString(input_json_stream.ToArray());
@@ -65,10 +65,8 @@ public class ApiEndpointsV1
             $"{nameof(UpdateAsync)}: {nameof(database_name)} = {database_name}, {nameof(entity_name)} = {entity_name}, {nameof(uuid)} = {uuid}, {nameof(input_json)} = {input_json}");
 
         BsonDocument input_document = BsonDocument.Parse(input_json);
-
-        BsonDocument? document = await repo.UpdateAsync(database_name: database_name, entity_name: entity_name, uuid: uuid, input: input_document);
-
-        MemoryStream stream = await document.MongoToJsonStream();
+        BsonDocument? document = await repo.UpsertAsync(database_name: database_name, entity_name: entity_name, uuid: uuid, input: input_document);
+        await using MemoryStream stream = await document.MongoToJsonStream();
 
         _logger.LogInformation($"{nameof(UpdateAsync)}: => {Encoding.UTF8.GetString(stream.ToArray())}");
 
@@ -83,7 +81,7 @@ public class ApiEndpointsV1
 
         if (document is { })
         {
-            MemoryStream stream = await document.MongoToJsonStream();
+            await using MemoryStream stream = await document.MongoToJsonStream();
             return TypedResults.Bytes(stream.ToArray(), "application/json");
         }
         else

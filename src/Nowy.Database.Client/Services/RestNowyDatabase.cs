@@ -2,7 +2,7 @@ using Nowy.Database.Contract.Models;
 
 namespace Nowy.Database.Client.Services;
 
-public sealed class RestNowyDatabase : INowyDatabase
+internal sealed class RestNowyDatabase : INowyDatabase
 {
     private readonly HttpClient _http_client;
     private readonly INowyDatabaseAuthService _database_auth_service;

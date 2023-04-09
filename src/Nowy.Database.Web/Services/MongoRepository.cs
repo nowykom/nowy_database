@@ -87,7 +87,7 @@ public class MongoRepository
         return document;
     }
 
-    public async Task<BsonDocument> UpdateAsync(string database_name, string entity_name, string uuid, BsonDocument input)
+    public async Task<BsonDocument> UpsertAsync(string database_name, string entity_name, string uuid, BsonDocument input)
     {
         IMongoDatabase database = _mongo_client.GetDatabase(database_name) ?? throw new ArgumentNullException(nameof(database));
         IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(entity_name) ?? throw new ArgumentNullException(nameof(collection));

@@ -6,7 +6,7 @@ using Nowy.Database.Contract.Models;
 
 namespace Nowy.Database.Client.Services;
 
-public sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where TModel : class, IBaseModel
+internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where TModel : class, IBaseModel
 {
     private readonly HttpClient _http_client;
     private readonly INowyDatabaseAuthService _database_auth_service;
@@ -99,6 +99,7 @@ public sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where T
         using HttpResponseMessage response = await _http_client.SendAsync(request);
         await using Stream stream = await response.Content.ReadAsStreamAsync();
         TModel? result = await JsonSerializer.DeserializeAsync<TModel>(stream, options: _json_options);
+        _model_service.SendModelUpdated(model);
         return result ?? throw new ArgumentNullException(nameof(result));
     }
 

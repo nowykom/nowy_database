@@ -1,4 +1,5 @@
 using Nowy.Database.Contract.Models;
+using Nowy.Database.Contract.Services;
 
 namespace Nowy.Database.Client.Services;
 
@@ -24,13 +25,15 @@ internal sealed class RestNowyDatabase : INowyDatabase
 
     public INowyCollection<TModel> GetCollection<TModel>(string database_name) where TModel : class, IBaseModel
     {
+        string entity_name = EntityNameHelper.GetEntityName(typeof(TModel));
+
         return new RestNowyCollection<TModel>(
             _http_client,
             _database_auth_service,
             _model_service,
             _endpoint,
             database_name: database_name,
-            entity_name: typeof(TModel).Name.Replace("Model", string.Empty)
+            entity_name: entity_name
         );
     }
 }

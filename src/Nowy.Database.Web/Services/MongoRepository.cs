@@ -40,7 +40,7 @@ public class MongoRepository
 
     private void _convertIntoTransfer(BsonDocument document)
     {
-        if (document.Contains("_id"))
+        if (!document.Contains("_id"))
         {
             throw new ArgumentException($"Bson Convert from Internal to Transfer: document is not in internal state: document must contain '_id': {document}");
         }

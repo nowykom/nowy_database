@@ -85,31 +85,9 @@ class Build : NukeBuild
         .DependsOn(ClearCache)
         .Executes(() =>
         {
-            try
-            {
-                DotNetTasks.DotNetToolRestore(
-                    _ => _.EnableNoCache()
-                );
-            }
-            catch (Exception)
-            {
-                try
-                {
-                    DotNetTasks.DotNetToolInstall(
-                        _ => _
-                            .SetPackageName("dotnet-outdated-tool")
-                            .EnableGlobal()
-                    );
-                }
-                catch (Exception)
-                {
-                    DotNetTasks.DotNetToolUpdate(
-                        _ => _
-                            .SetPackageName("dotnet-outdated-tool")
-                            .EnableGlobal()
-                    );
-                }
-            }
+            DotNetTasks.DotNetToolRestore(
+                _ => _.EnableNoCache()
+            );
 
             DotNetTasks.DotNet($"outdated --upgrade --no-restore {RootDirectory / "src"}");
         });

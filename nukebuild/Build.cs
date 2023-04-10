@@ -87,19 +87,28 @@ class Build : NukeBuild
         {
             try
             {
-                DotNetTasks.DotNetToolInstall(
-                    _ => _
-                        .SetPackageName("dotnet-outdated-tool")
-                        .EnableGlobal()
+                DotNetTasks.DotNetToolRestore(
+                    _ => _.EnableNoCache()
                 );
             }
             catch (Exception)
             {
-                DotNetTasks.DotNetToolUpdate(
-                    _ => _
-                        .SetPackageName("dotnet-outdated-tool")
-                        .EnableGlobal()
-                );
+                try
+                {
+                    DotNetTasks.DotNetToolInstall(
+                        _ => _
+                            .SetPackageName("dotnet-outdated-tool")
+                            .EnableGlobal()
+                    );
+                }
+                catch (Exception)
+                {
+                    DotNetTasks.DotNetToolUpdate(
+                        _ => _
+                            .SetPackageName("dotnet-outdated-tool")
+                            .EnableGlobal()
+                    );
+                }
             }
 
             DotNetTasks.DotNet($"outdated --upgrade --no-restore {RootDirectory / "src"}");

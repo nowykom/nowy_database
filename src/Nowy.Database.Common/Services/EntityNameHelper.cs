@@ -1,6 +1,6 @@
 using Nowy.Database.Contract.Models;
 
-namespace Nowy.Database.Contract.Services;
+namespace Nowy.Database.Common.Services;
 
 public static class EntityNameHelper
 {

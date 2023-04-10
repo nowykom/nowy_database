@@ -3,9 +3,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
-using Nowy.Standard;
 
-namespace Nowy.Database.Contract.Services;
+namespace Nowy.Database.Common.Services;
 
 internal sealed class ModelReflectionHelper
 {
@@ -18,7 +17,7 @@ internal sealed class ModelReflectionHelper
 
     public ModelReflectionHelper(Type instance_type)
     {
-        _instance_type = instance_type;
+        this._instance_type = instance_type;
     }
 
     public static ModelReflectionHelper GetHelperInstance(Type instance_type)

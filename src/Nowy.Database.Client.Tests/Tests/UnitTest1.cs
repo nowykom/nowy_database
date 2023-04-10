@@ -1,9 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
-using Nowy.Database.Client.Services;
-using Nowy.Database.Client.Tests.Tests;
+using Nowy.Database.Common.Models;
 using Nowy.Database.Contract.Models;
 
-namespace Nowy.Database.Client.Tests;
+namespace Nowy.Database.Client.Tests.Tests;
 
 public class UnitTest1
 {
@@ -18,13 +17,13 @@ public class UnitTest1
         string endpoint = "https://main.database.nowykom.de";
         services.AddNowyDatabaseClient(endpoint: endpoint, sp => new MockDatabaseAuthService());
 
-        _sp = services.BuildServiceProvider();
+        this._sp = services.BuildServiceProvider();
     }
 
     [Fact]
     public async Task TestInsert()
     {
-        INowyDatabase database = _sp.GetRequiredService<INowyDatabase>();
+        INowyDatabase database = this._sp.GetRequiredService<INowyDatabase>();
 
         INowyCollection<TestModel> collection = database.GetCollection<TestModel>("unit_tests");
 
@@ -40,7 +39,7 @@ public class UnitTest1
     [Fact]
     public async Task TestUpdate()
     {
-        INowyDatabase database = _sp.GetRequiredService<INowyDatabase>();
+        INowyDatabase database = this._sp.GetRequiredService<INowyDatabase>();
 
         INowyCollection<TestModel> collection = database.GetCollection<TestModel>("unit_tests");
 
@@ -56,7 +55,7 @@ public class UnitTest1
     [Fact]
     public async Task TestDelete()
     {
-        INowyDatabase database = _sp.GetRequiredService<INowyDatabase>();
+        INowyDatabase database = this._sp.GetRequiredService<INowyDatabase>();
 
         INowyCollection<TestModel> collection = database.GetCollection<TestModel>("unit_tests");
 

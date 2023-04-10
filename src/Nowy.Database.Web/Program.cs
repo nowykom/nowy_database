@@ -5,6 +5,7 @@ using MongoDB.Bson.IO;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.IdGenerators;
 using MongoDB.Driver;
+using Nowy.Auth.Server;
 using Nowy.Database.Contract.Models;
 using Nowy.Database.Web.Endpoints;
 using Nowy.Database.Web.Services;
@@ -26,6 +27,9 @@ builder.Services.AddSingleton<INowyDatabase, MongoNowyDatabase>();
 
 builder.Services.AddSingleton<ApiEndpointsV1>();
 
+builder.Services.AddNowyStandard();
+builder.Services.AddNowyAuthServer();
+
 WebApplication app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -41,6 +45,7 @@ else
 app.UseSwagger();
 app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Nowy Database"); });
 
+app.UseNowyAuthServer();
 
 app.Services.GetRequiredService<ApiEndpointsV1>().MapEndpoints(app.MapGroup("api/v1"));
 

@@ -1,0 +1,59 @@
+<Project>
+
+  <PropertyGroup>
+    <NodeModulesStampFile>node_modules\_NodeModules.stamp</NodeModulesStampFile>
+    <NodeCompileStampDirectory>wwwroot\output</NodeCompileStampDirectory>
+    <NodeCompileComponentsStampFile>$(NodeCompileStampDirectory)\_NodeCompile.Components.stamp</NodeCompileComponentsStampFile>
+    <NodeCompileServicesStampFile>$(NodeCompileStampDirectory)\_NodeCompile.Services.stamp</NodeCompileServicesStampFile>
+    <NodeCompileResourcesStampFile>$(NodeCompileStampDirectory)\_NodeCompile.Resources.stamp</NodeCompileResourcesStampFile>
+    <NodeCompileConfigsStampFile>$(NodeCompileStampDirectory)\_NodeCompileConfigs.stamp</NodeCompileConfigsStampFile>
+
+    <PrepareForBuildDependsOn>
+      NodeCompile;
+      $(PrepareForBuildDependsOn)
+    </PrepareForBuildDependsOn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="..\common\webpack.config.js"/>
+    <Content Remove="..\common\Webpack.props"/>
+    <Content Remove="..\common\Webpack.targets"/>
+    <None Include="..\common\webpack.config.js">
+      <Link>Properties\common\webpack.config.js</Link>
+      <Pack>False</Pack>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="..\common\Webpack.props">
+      <Link>Properties\common\Webpack.props</Link>
+      <Pack>false</Pack>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Include="..\common\Webpack.targets">
+      <Link>Properties\common\Webpack.targets</Link>
+      <Pack>false</Pack>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="tsconfig.razor.json"/>
+    <Content Remove="tsconfig.services.json"/>
+    <Content Remove="tsconfig.webpack.json"/>
+    <Content Remove="package.json"/>
+    <Content Remove="package-lock.json"/>
+
+    <None Include="tsconfig.razor.json" Link="Properties\tsconfig.razor.json"/>
+    <None Include="tsconfig.services.json" Link="Properties\tsconfig.services.json"/>
+    <None Include="tsconfig.webpack.json" Link="Properties\tsconfig.webpack.json"/>
+    <None Include="package.json" Link="Properties\package.json"/>
+    <None Include="package-lock.json" Link="Properties\package-lock.json"/>
+
+    <None Update="webpack.config.js" Link="Properties\webpack.config.js"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="wwwroot\.gitignore"/>
+    <None Include="wwwroot\.gitignore"/>
+  </ItemGroup>
+
+</Project>

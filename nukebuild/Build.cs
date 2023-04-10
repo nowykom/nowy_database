@@ -139,8 +139,14 @@ class Build : NukeBuild
 
             string[] projects = new[]
             {
+                "Nowy.Auth.Client",
+                "Nowy.Auth.ClientWasm",
+                "Nowy.Auth.Common",
+                "Nowy.Auth.Contract",
+                "Nowy.Auth.Server",
                 "Nowy.Database.Client",
                 "Nowy.Database.Contract",
+                "Nowy.Database.Common",
             };
 
             foreach (string project in projects)

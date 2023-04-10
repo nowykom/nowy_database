@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Nowy.Database.Contract.Models;
+namespace Nowy.Database.Common.Models;
 
 public static class BaseModelExtensions
 {

@@ -11,7 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Nowy.Database.Common\Nowy.Database.Common.csproj" />
+    <ProjectReference Include="..\Nowy.Auth.Common\Nowy.Auth.Common.csproj" />
+    <ProjectReference Include="..\Nowy.Auth.Contract\Nowy.Auth.Contract.csproj" />
     <ProjectReference Include="..\Nowy.Database.Contract\Nowy.Database.Contract.csproj" />
   </ItemGroup>
 

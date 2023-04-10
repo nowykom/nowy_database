@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Nowy.Database.Client\Nowy.Database.Client.csproj" />
+    <ProjectReference Include="..\Nowy.Database.Common\Nowy.Database.Common.csproj" />
   </ItemGroup>
 
 </Project>

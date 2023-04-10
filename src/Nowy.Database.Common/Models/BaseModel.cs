@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
-using Nowy.Database.Contract.Services;
+using Nowy.Database.Common.Services;
+using Nowy.Database.Contract.Models;
 
-namespace Nowy.Database.Contract.Models;
+namespace Nowy.Database.Common.Models;
 
 public abstract class BaseModel : IBaseModel
 {
@@ -11,7 +11,7 @@ public abstract class BaseModel : IBaseModel
 
     protected BaseModel()
     {
-        _reflection_helpers = ModelReflectionHelper.GetHelperInstance(instance_type: this.GetType());
+        this._reflection_helpers = ModelReflectionHelper.GetHelperInstance(instance_type: this.GetType());
     }
 
     private static Type? _model_type = null;

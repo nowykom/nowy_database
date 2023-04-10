@@ -34,7 +34,7 @@ public class MongoRepository
         }
         else
         {
-            input.Remove("_ids");
+            input["_ids"] = new BsonArray();
         }
     }
 
@@ -57,7 +57,7 @@ public class MongoRepository
         }
         else
         {
-            document.Remove("ids");
+            document["ids"] = new BsonArray();
         }
     }
 

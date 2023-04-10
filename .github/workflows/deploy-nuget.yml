@@ -25,6 +25,9 @@ jobs:
         with:
           path: nowy_database
 
+      - name: Cleanup
+        run: rm -rf ~/.dotnet/toolResolverCache
+
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
         with:

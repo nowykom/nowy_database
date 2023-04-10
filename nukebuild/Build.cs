@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Nuke.Common;
@@ -72,12 +73,20 @@ class Build : NukeBuild
         Log.Information("Configuration:\t{Configuration}", Configuration);
     }
 
+    private AbsolutePath HomeDirectory => (AbsolutePath)(
+        ( Environment.OSVersion.Platform == PlatformID.Unix ||
+          Environment.OSVersion.Platform == PlatformID.MacOSX )
+            ? Environment.GetEnvironmentVariable("HOME")
+            : Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%")
+    );
+
     Target ClearCache => _ => _
         .Executes(() =>
         {
             DotNetTasks.DotNet($"nuget locals http-cache --clear");
             DotNetTasks.DotNet($"nuget locals plugins-cache --clear");
             DotNetTasks.DotNet($"nuget locals temp --clear");
+            DeleteDirectory(HomeDirectory / ".dotnet" / "toolResolverCache");
         });
 
     Target Upgrade => _ => _
@@ -85,7 +94,6 @@ class Build : NukeBuild
         .DependsOn(ClearCache)
         .Executes(() =>
         {
-            
             DotNetTasks.DotNetToolRestore(
                 _ => _.EnableNoCache()
             );

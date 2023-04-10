@@ -20,8 +20,9 @@ public abstract class BaseModel : IBaseModel
 
     [JsonIgnore] public bool ShouldSave { get; set; }
 
-    [JsonPropertyName("uuid")]
-    public string uuid { get; set; } = string.Empty;
+    [JsonPropertyName("id")] public string id { get; set; } = string.Empty;
+
+    [JsonPropertyName("ids")] public IReadOnlyList<string> ids { get; set; } = Array.Empty<string>();
 
     [JsonPropertyName("timestamp_database_insert")]
     public long timestamp_database_insert { get; set; }

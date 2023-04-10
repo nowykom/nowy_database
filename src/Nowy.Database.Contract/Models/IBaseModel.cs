@@ -2,5 +2,6 @@ namespace Nowy.Database.Contract.Models;
 
 public interface IBaseModel
 {
-    string uuid { get; set; }
+    string id { get; set; }
+    IReadOnlyList<string> ids { get; set; }
 }

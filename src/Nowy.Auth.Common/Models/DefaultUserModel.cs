@@ -37,7 +37,7 @@ public class DefaultUserModel : BaseModel, IUserModel
     [JsonPropertyName("meta")] public Dictionary<string, string?> Meta { get; set; } = new();
 
 
-    string IUserModel.Id => this.uuid;
+    string IUserModel.Id => this.id;
     string IUserModel.Name => this._names?.FirstOrDefault() ?? string.Empty;
     IReadOnlyList<string> IUserModel.Names => ( this._names as IReadOnlyList<string> ) ?? Array.Empty<string>();
     IReadOnlyList<string> IUserModel.Permissions => ( this._permissions as IReadOnlyList<string> ) ?? Array.Empty<string>();

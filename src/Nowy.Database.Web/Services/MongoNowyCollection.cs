@@ -40,9 +40,9 @@ internal sealed class MongoNowyCollection<TModel> : INowyCollection<TModel> wher
         return result;
     }
 
-    public async Task<TModel?> GetByIdAsync(string uuid)
+    public async Task<TModel?> GetByIdAsync(string id)
     {
-        BsonDocument? document = await _repo.GetByIdAsync(database_name: _database_name, entity_name: _entity_name, uuid: uuid);
+        BsonDocument? document = await _repo.GetByIdAsync(database_name: _database_name, entity_name: _entity_name, id: id);
 
         if (document is { })
         {
@@ -57,32 +57,32 @@ internal sealed class MongoNowyCollection<TModel> : INowyCollection<TModel> wher
         }
     }
 
-    public async Task<TModel> InsertAsync(string uuid, TModel model)
+    public async Task<TModel> InsertAsync(string id, TModel model)
     {
         string input_json = JsonSerializer.Serialize(model, _json_options);
 
         BsonDocument input_document = BsonDocument.Parse(input_json);
-        BsonDocument? document = await _repo.UpsertAsync(database_name: _database_name, entity_name: _entity_name, uuid: uuid, input: input_document);
+        BsonDocument? document = await _repo.UpsertAsync(database_name: _database_name, entity_name: _entity_name, id: id, input: input_document);
         await using MemoryStream stream = await document.MongoToJsonStream();
 
         TModel? result = await JsonSerializer.DeserializeAsync<TModel>(stream, options: _json_options);
         return result ?? throw new ArgumentNullException(nameof(result));
     }
 
-    public async Task<TModel> UpdateAsync(string uuid, TModel model)
+    public async Task<TModel> UpdateAsync(string id, TModel model)
     {
         string input_json = JsonSerializer.Serialize(model, _json_options);
 
         BsonDocument input_document = BsonDocument.Parse(input_json);
-        BsonDocument? document = await _repo.UpsertAsync(database_name: _database_name, entity_name: _entity_name, uuid: uuid, input: input_document);
+        BsonDocument? document = await _repo.UpsertAsync(database_name: _database_name, entity_name: _entity_name, id: id, input: input_document);
         await using MemoryStream stream = await document.MongoToJsonStream();
 
         TModel? result = await JsonSerializer.DeserializeAsync<TModel>(stream, options: _json_options);
         return result ?? throw new ArgumentNullException(nameof(result));
     }
 
-    public async Task DeleteAsync(string uuid)
+    public async Task DeleteAsync(string id)
     {
-        BsonDocument? document = await _repo.DeleteAsync(database_name: _database_name, entity_name: _entity_name, uuid: uuid);
+        BsonDocument? document = await _repo.DeleteAsync(database_name: _database_name, entity_name: _entity_name, id: id);
     }
 }

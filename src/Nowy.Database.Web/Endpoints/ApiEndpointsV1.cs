@@ -18,10 +18,10 @@ public class ApiEndpointsV1
     public void MapEndpoints(RouteGroupBuilder app)
     {
         app.MapGet("{database_name}/{entity_name}", GetAllAsync);
-        app.MapGet("{database_name}/{entity_name}/{uuid}", GetByIdAsync);
-        app.MapPost("{database_name}/{entity_name}/{uuid}", UpdateAsync);
-        app.MapPut("{database_name}/{entity_name}/{uuid}", UpdateAsync);
-        app.MapDelete("{database_name}/{entity_name}/{uuid}", DeleteAsync);
+        app.MapGet("{database_name}/{entity_name}/{id}", GetByIdAsync);
+        app.MapPost("{database_name}/{entity_name}/{id}", UpdateAsync);
+        app.MapPut("{database_name}/{entity_name}/{id}", UpdateAsync);
+        app.MapDelete("{database_name}/{entity_name}/{id}", DeleteAsync);
     }
 
     public async Task<Results<FileContentHttpResult, NotFound>> GetAllAsync(MongoRepository repo, string database_name, string entity_name)
@@ -34,11 +34,11 @@ public class ApiEndpointsV1
         return TypedResults.Bytes(stream.ToArray(), "application/json");
     }
 
-    public async Task<Results<FileContentHttpResult, NoContent, NotFound>> GetByIdAsync(MongoRepository repo, string database_name, string entity_name, string uuid)
+    public async Task<Results<FileContentHttpResult, NoContent, NotFound>> GetByIdAsync(MongoRepository repo, string database_name, string entity_name, string id)
     {
-        _logger.LogInformation($"{nameof(GetByIdAsync)}: {nameof(database_name)} = {database_name}, {nameof(entity_name)} = {entity_name}, {nameof(uuid)} = {uuid}");
+        _logger.LogInformation($"{nameof(GetByIdAsync)}: {nameof(database_name)} = {database_name}, {nameof(entity_name)} = {entity_name}, {nameof(id)} = {id}");
 
-        BsonDocument? document = await repo.GetByIdAsync(database_name: database_name, entity_name: entity_name, uuid: uuid);
+        BsonDocument? document = await repo.GetByIdAsync(database_name: database_name, entity_name: entity_name, id: id);
 
         if (document is { })
         {
@@ -51,7 +51,7 @@ public class ApiEndpointsV1
         }
     }
 
-    public async Task<Results<FileContentHttpResult, NotFound>> UpdateAsync(MongoRepository repo, string database_name, string entity_name, string uuid,
+    public async Task<Results<FileContentHttpResult, NotFound>> UpdateAsync(MongoRepository repo, string database_name, string entity_name, string id,
         HttpRequest request)
     {
         string input_json;
@@ -62,10 +62,10 @@ public class ApiEndpointsV1
         }
 
         _logger.LogInformation(
-            $"{nameof(UpdateAsync)}: {nameof(database_name)} = {database_name}, {nameof(entity_name)} = {entity_name}, {nameof(uuid)} = {uuid}, {nameof(input_json)} = {input_json}");
+            $"{nameof(UpdateAsync)}: {nameof(database_name)} = {database_name}, {nameof(entity_name)} = {entity_name}, {nameof(id)} = {id}, {nameof(input_json)} = {input_json}");
 
         BsonDocument input_document = BsonDocument.Parse(input_json);
-        BsonDocument? document = await repo.UpsertAsync(database_name: database_name, entity_name: entity_name, uuid: uuid, input: input_document);
+        BsonDocument? document = await repo.UpsertAsync(database_name: database_name, entity_name: entity_name, id: id, input: input_document);
         await using MemoryStream stream = await document.MongoToJsonStream();
 
         _logger.LogInformation($"{nameof(UpdateAsync)}: => {Encoding.UTF8.GetString(stream.ToArray())}");
@@ -73,11 +73,11 @@ public class ApiEndpointsV1
         return TypedResults.Bytes(stream.ToArray(), "application/json");
     }
 
-    public async Task<Results<FileContentHttpResult, NoContent, NotFound>> DeleteAsync(MongoRepository repo, string database_name, string entity_name, string uuid)
+    public async Task<Results<FileContentHttpResult, NoContent, NotFound>> DeleteAsync(MongoRepository repo, string database_name, string entity_name, string id)
     {
-        _logger.LogInformation($"{nameof(DeleteAsync)}: {nameof(database_name)} = {database_name}, {nameof(entity_name)} = {entity_name}, {nameof(uuid)} = {uuid}");
+        _logger.LogInformation($"{nameof(DeleteAsync)}: {nameof(database_name)} = {database_name}, {nameof(entity_name)} = {entity_name}, {nameof(id)} = {id}");
 
-        BsonDocument? document = await repo.DeleteAsync(database_name: database_name, entity_name: entity_name, uuid: uuid);
+        BsonDocument? document = await repo.DeleteAsync(database_name: database_name, entity_name: entity_name, id: id);
 
         if (document is { })
         {

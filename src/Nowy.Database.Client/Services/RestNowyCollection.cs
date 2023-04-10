@@ -59,9 +59,9 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
         return result;
     }
 
-    public async Task<TModel?> GetByIdAsync(string uuid)
+    public async Task<TModel?> GetByIdAsync(string id)
     {
-        string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{uuid}";
+        string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{id}";
         using HttpRequestMessage request = new(HttpMethod.Get, url);
         _configureAuth(request);
 
@@ -76,9 +76,9 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
         return result;
     }
 
-    public async Task<TModel> InsertAsync(string uuid, TModel model)
+    public async Task<TModel> InsertAsync(string id, TModel model)
     {
-        string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{uuid}";
+        string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{id}";
         using HttpRequestMessage request = new(HttpMethod.Post, url);
         _configureAuth(request);
         request.Content = JsonContent.Create(model, mediaType: null, _json_options);
@@ -90,9 +90,9 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
         return result ?? throw new ArgumentNullException(nameof(result));
     }
 
-    public async Task<TModel> UpdateAsync(string uuid, TModel model)
+    public async Task<TModel> UpdateAsync(string id, TModel model)
     {
-        string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{uuid}";
+        string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{id}";
         using HttpRequestMessage request = new(HttpMethod.Post, url);
         _configureAuth(request);
         request.Content = JsonContent.Create(model, mediaType: null, _json_options);
@@ -104,9 +104,9 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
         return result ?? throw new ArgumentNullException(nameof(result));
     }
 
-    public async Task DeleteAsync(string uuid)
+    public async Task DeleteAsync(string id)
     {
-        string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{uuid}";
+        string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{id}";
         using HttpRequestMessage request = new(HttpMethod.Delete, url);
         _configureAuth(request);
 

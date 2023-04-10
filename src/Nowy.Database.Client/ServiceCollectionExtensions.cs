@@ -3,20 +3,20 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Nowy.Database.Client.Services;
 using Nowy.Database.Contract.Models;
+using Nowy.Database.Contract.Services;
 using Nowy.Standard;
 
 namespace Nowy.Database.Client;
 
 public static class ServiceCollectionExtensions
 {
-    public static void AddNowyDatabaseClient(this IServiceCollection services, string endpoint, Func<IServiceProvider, INowyDatabaseAuthService> func_database_auth_service)
+    public static void AddNowyDatabaseClient(this IServiceCollection services, string endpoint)
     {
         services.AddSingleton<IModelService, ModelService>(sp => new ModelService());
 
-        services.AddTransient<INowyDatabaseAuthService>(func_database_auth_service);
         services.AddTransient<INowyDatabase>(sp => new RestNowyDatabase(
             sp.GetRequiredService<IHttpClientFactory>(),
-            sp.GetRequiredService<INowyDatabaseAuthService>(),
+            sp.GetService<INowyDatabaseAuthService>(),
             sp.GetRequiredService<IModelService>(),
             endpoint
         ));

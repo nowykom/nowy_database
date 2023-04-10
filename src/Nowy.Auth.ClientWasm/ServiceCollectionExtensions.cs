@@ -6,5 +6,6 @@ public static class ServiceCollectionExtensions
 {
     public static void AddNowyAuthClientWasm(this IServiceCollection services)
     {
+
     }
 }

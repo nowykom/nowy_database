@@ -1,6 +1,7 @@
 using Nowy.Auth.Common.Models;
 using Nowy.Auth.Contract.Models;
 using Nowy.Database.Contract.Models;
+using Nowy.Database.Contract.Services;
 
 namespace Nowy.Auth.Server.Services;
 

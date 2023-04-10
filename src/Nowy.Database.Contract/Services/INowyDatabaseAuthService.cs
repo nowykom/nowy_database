@@ -1,4 +1,4 @@
-namespace Nowy.Database.Client.Services;
+namespace Nowy.Database.Contract.Services;
 
 public interface INowyDatabaseAuthService
 {

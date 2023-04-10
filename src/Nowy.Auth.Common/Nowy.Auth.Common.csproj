@@ -22,10 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Nowy.Auth.Contract\Nowy.Auth.Contract.csproj" />
     <ProjectReference Include="..\Nowy.Database.Common\Nowy.Database.Common.csproj" />
     <ProjectReference Include="..\Nowy.Database.Contract\Nowy.Database.Contract.csproj" />

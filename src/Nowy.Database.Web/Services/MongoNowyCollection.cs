@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using MongoDB.Bson;
 using Nowy.Database.Contract.Models;
+using Nowy.Database.Contract.Services;
 
 namespace Nowy.Database.Web.Services;
 

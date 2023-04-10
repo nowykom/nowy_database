@@ -1,4 +1,6 @@
-namespace Nowy.Database.Contract.Models;
+using Nowy.Database.Contract.Models;
+
+namespace Nowy.Database.Contract.Services;
 
 public interface INowyDatabase
 {

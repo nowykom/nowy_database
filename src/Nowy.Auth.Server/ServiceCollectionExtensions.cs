@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Nowy.Auth.Common.Services;
 using Nowy.Auth.Contract.Services;
 using Nowy.Auth.Server.Services;
+using Nowy.Database.Contract.Services;
 
 namespace Nowy.Auth.Server;
 
@@ -12,8 +14,8 @@ public static class ServiceCollectionExtensions
 {
     public static void AddNowyAuthServer(this IServiceCollection services, string? database_name = null)
     {
-        services.AddSingleton<INowyAuthService, DefaultServerNowyAuthService>();
-
+        services.AddSingleton<INowyAuthService, DefaultNowyAuthService>();
+        services.AddSingleton<INowyDatabaseAuthService, DefaultNowyDatabaseAuthService>();
 
         services.AddAuthentication(opt =>
         {

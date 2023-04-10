@@ -3,13 +3,14 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Nowy.Database.Contract.Models;
+using Nowy.Database.Contract.Services;
 
 namespace Nowy.Database.Client.Services;
 
 internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where TModel : class, IBaseModel
 {
     private readonly HttpClient _http_client;
-    private readonly INowyDatabaseAuthService _database_auth_service;
+    private readonly INowyDatabaseAuthService? _database_auth_service;
     private readonly IModelService _model_service;
     private readonly string _endpoint;
     private readonly string _database_name;
@@ -19,7 +20,7 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
 
     public RestNowyCollection(
         HttpClient http_client,
-        INowyDatabaseAuthService database_auth_service,
+        INowyDatabaseAuthService? database_auth_service,
         IModelService model_service,
         string endpoint,
         string database_name,
@@ -36,7 +37,7 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
 
     private void _configureAuth(HttpRequestMessage request)
     {
-        if (_database_auth_service.GetJWT() is { Length: > 0 } jwt)
+        if (_database_auth_service?.GetJWT() is { Length: > 0 } jwt)
         {
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
         }

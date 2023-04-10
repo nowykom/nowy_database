@@ -3,13 +3,13 @@ using Nowy.Auth.Contract.Services;
 
 namespace Nowy.Auth.Server.Services;
 
-public class DefaultServerNowyAuthService : INowyAuthService
+public class DefaultNowyAuthService : INowyAuthService
 {
     private readonly IUserRepository _user_repo;
 
     private DefaultServerNowyAuthState _state = new DefaultServerNowyAuthState();
 
-    public DefaultServerNowyAuthService(IUserRepository user_repo)
+    public DefaultNowyAuthService(IUserRepository user_repo)
     {
         _user_repo = user_repo;
     }

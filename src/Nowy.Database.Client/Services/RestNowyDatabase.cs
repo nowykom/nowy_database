@@ -1,18 +1,19 @@
 using Nowy.Database.Common.Services;
 using Nowy.Database.Contract.Models;
+using Nowy.Database.Contract.Services;
 
 namespace Nowy.Database.Client.Services;
 
 internal sealed class RestNowyDatabase : INowyDatabase
 {
     private readonly HttpClient _http_client;
-    private readonly INowyDatabaseAuthService _database_auth_service;
+    private readonly INowyDatabaseAuthService? _database_auth_service;
     private readonly IModelService _model_service;
     private readonly string _endpoint;
 
     public RestNowyDatabase(
         IHttpClientFactory http_client_factory,
-        INowyDatabaseAuthService database_auth_service,
+        INowyDatabaseAuthService? database_auth_service,
         IModelService model_service,
         string endpoint
     )

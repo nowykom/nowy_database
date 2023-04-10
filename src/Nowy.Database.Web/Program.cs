@@ -7,6 +7,7 @@ using MongoDB.Bson.Serialization.IdGenerators;
 using MongoDB.Driver;
 using Nowy.Auth.Server;
 using Nowy.Database.Contract.Models;
+using Nowy.Database.Contract.Services;
 using Nowy.Database.Web.Endpoints;
 using Nowy.Database.Web.Services;
 using Nowy.Standard;

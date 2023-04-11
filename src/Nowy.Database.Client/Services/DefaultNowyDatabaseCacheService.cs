@@ -19,7 +19,7 @@ internal sealed class DefaultNowyDatabaseCacheService : IHostedService, INowyDat
 {
     private readonly ILogger _logger;
     private readonly INowyDatabase _nowy_database;
-    private readonly IReadOnlyList<IDatabaseStaticDataImporter> _static_data_importers;
+    private readonly IEnumerable<IDatabaseStaticDataImporter> _static_data_importers;
 
     private static readonly object _lock = new();
     private readonly Dictionary<(Type model_type, string uuid), IBaseModel> _models = new();
@@ -44,7 +44,7 @@ internal sealed class DefaultNowyDatabaseCacheService : IHostedService, INowyDat
     {
         this._logger = logger;
         this._nowy_database = nowy_database;
-        this._static_data_importers = static_data_importers.ToList();
+        this._static_data_importers = static_data_importers;
     }
 
     Task IHostedService.StartAsync(CancellationToken cancellationToken)
@@ -274,7 +274,7 @@ internal sealed class DefaultNowyDatabaseCacheService : IHostedService, INowyDat
 
     private async Task _loadStaticDataAsync()
     {
-        foreach (IDatabaseStaticDataImporter static_data_importer in this._static_data_importers)
+        foreach (IDatabaseStaticDataImporter static_data_importer in this._static_data_importers.ToArray())
         {
             await static_data_importer.LoadStaticDataAsync();
         }

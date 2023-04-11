@@ -15,7 +15,7 @@ namespace Nowy.Database.Client.Services;
 // ReSharper disable MemberCanBePrivate.Global
 public sealed record ModelTypeSettings(string DatabaseName);
 
-internal sealed class DefaultNowyDatabaseCacheService : BackgroundService, IHostedService, INowyDatabaseCacheService
+internal sealed class DefaultNowyDatabaseCacheService : IHostedService, INowyDatabaseCacheService
 {
     private readonly ILogger _logger;
     private readonly INowyDatabase _nowy_database;
@@ -47,7 +47,17 @@ internal sealed class DefaultNowyDatabaseCacheService : BackgroundService, IHost
         this._static_data_importers = static_data_importers.ToList();
     }
 
-    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    Task IHostedService.StartAsync(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+
+    Task IHostedService.StopAsync(CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+
+    protected async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         await Task.Yield();
 

@@ -15,7 +15,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IModelService, ModelService>(sp => new ModelService());
 
-        services.AddHostedService<INowyDatabaseCacheService>(sp => new DefaultNowyDatabaseCacheService(
+     if (false)   services.AddHostedService<INowyDatabaseCacheService>(sp => new DefaultNowyDatabaseCacheService(
             sp.GetRequiredService<ILogger<DefaultNowyDatabaseCacheService>>(),
             sp.GetRequiredService<INowyDatabase>(),
             sp.GetRequiredService<IEnumerable<IDatabaseStaticDataImporter>>()

@@ -17,6 +17,7 @@ internal class DefaultUserRepository : IUserRepository
 
     public DefaultUserRepository(INowyDatabase database, DefaultUserRepositoryConfig config)
     {
+        Console.WriteLine($"DefaultUserRepository");
         _database = database;
         _config = config;
     }

@@ -10,6 +10,7 @@ internal class DefaultUserPermissionService : IUserPermissionService
 
     public DefaultUserPermissionService(IUserRepository user_repository)
     {
+        Console.WriteLine($"DefaultUserPermissionService");
         _user_repository = user_repository;
     }
 

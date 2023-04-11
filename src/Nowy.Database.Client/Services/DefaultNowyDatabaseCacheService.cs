@@ -25,7 +25,8 @@ internal sealed class DefaultNowyDatabaseCacheService : IHostedService, INowyDat
     private readonly Dictionary<(Type model_type, string uuid), IBaseModel> _models = new();
     private ImmutableDictionary<Type, ModelTypeSettings> _model_types = ImmutableDictionary<Type, ModelTypeSettings>.Empty;
 
-    private static readonly BlockingCollection<Func<Task>> _tasks = new();
+    private static readonly Lazy<BlockingCollection<Func<Task>>> _lazy_tasks = new();
+    private static BlockingCollection<Func<Task>> _tasks => _lazy_tasks.Value;
 
     public UnixTimestamp LatestInteractionTimestamp { get; set; } = UnixTimestamp.Epoch;
 

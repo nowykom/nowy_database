@@ -93,6 +93,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IUserPermissionService, X2>();
     }
 
+
     public static void UseNowyAuthServer(this WebApplication app)
     {
         app.UseAuthentication();

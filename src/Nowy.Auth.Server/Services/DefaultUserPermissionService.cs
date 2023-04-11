@@ -16,6 +16,7 @@ internal class DefaultUserPermissionService : IUserPermissionService
 
     public async ValueTask<ClaimsIdentity?> GetUserPermissionsIdentity(string sub, CancellationToken cancellationToken)
     {
+        Console.WriteLine($"DefaultUserPermissionService.GetUserPermissionsIdentity");
         IReadOnlyList<IUserModel> users = await this._user_repository.FindUsersAsync(sub);
         IReadOnlyList<Claim> claims = users
             .SelectMany(o => o.Permissions)

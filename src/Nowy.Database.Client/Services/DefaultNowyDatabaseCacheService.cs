@@ -51,21 +51,24 @@ internal sealed class DefaultNowyDatabaseCacheService : BackgroundService, IHost
     {
         await Task.Yield();
 
-        this.Load();
-
-        while (!cancellationToken.IsCancellationRequested)
+        await Task.Run(async () =>
         {
-            Func<Task> task = _tasks.Take();
+            this.Load();
 
-            try
+            while (!cancellationToken.IsCancellationRequested)
             {
-                await task.Invoke();
+                Func<Task> task = _tasks.Take();
+
+                try
+                {
+                    await task.Invoke();
+                }
+                catch (Exception ex)
+                {
+                    this._logger.LogError(ex, $"Exception in database task");
+                }
             }
-            catch (Exception ex)
-            {
-                this._logger.LogError(ex, $"Exception in database task");
-            }
-        }
+        });
     }
 
     private void _triggerLoop()

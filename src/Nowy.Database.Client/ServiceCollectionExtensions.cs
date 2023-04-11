@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Runtime.InteropServices;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Nowy.Database.Client.Services;
@@ -15,11 +16,14 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IModelService, ModelService>(sp => new ModelService());
 
-     if (false)   services.AddHostedService<INowyDatabaseCacheService>(sp => new DefaultNowyDatabaseCacheService(
-            sp.GetRequiredService<ILogger<DefaultNowyDatabaseCacheService>>(),
-            sp.GetRequiredService<INowyDatabase>(),
-            sp.GetRequiredService<IEnumerable<IDatabaseStaticDataImporter>>()
-        ));
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER")))
+        {
+            services.AddHostedService<INowyDatabaseCacheService>(sp => new DefaultNowyDatabaseCacheService(
+                sp.GetRequiredService<ILogger<DefaultNowyDatabaseCacheService>>(),
+                sp.GetRequiredService<INowyDatabase>(),
+                sp.GetRequiredService<IEnumerable<IDatabaseStaticDataImporter>>()
+            ));
+        }
 
         services.AddTransient<INowyDatabase>(sp => new RestNowyDatabase(
             sp.GetRequiredService<IHttpClientFactory>(),

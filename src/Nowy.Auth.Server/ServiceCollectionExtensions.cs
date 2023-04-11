@@ -54,7 +54,7 @@ public static class ServiceCollectionExtensions
             return config;
         });
         services.AddTransient<IUserRepository, DefaultUserRepository>();
-        services.AddSingleton<IUserPermissionService, DefaultUserPermissionService>();
+        services.AddTransient<IUserPermissionService, DefaultUserPermissionService>();
     }
 
     public static void UseNowyAuthServer(this WebApplication app)

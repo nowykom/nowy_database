@@ -98,7 +98,7 @@ class Build : NukeBuild
                 _ => _.EnableNoCache()
             );
 
-            DotNetTasks.DotNet($"outdated --upgrade --no-restore {RootDirectory / "src"}");
+            DotNetTasks.DotNet($"outdated --upgrade --no-restore {Solution.Path}");
         });
 
     Target Clean => _ => _

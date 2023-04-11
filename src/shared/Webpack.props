@@ -15,21 +15,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="..\common\webpack.config.js"/>
-    <Content Remove="..\common\Webpack.props"/>
-    <Content Remove="..\common\Webpack.targets"/>
-    <None Include="..\common\webpack.config.js">
-      <Link>Properties\common\webpack.config.js</Link>
+    <Content Remove="..\shared\webpack.config.js"/>
+    <Content Remove="..\shared\Webpack.props"/>
+    <Content Remove="..\shared\Webpack.targets"/>
+    <None Include="..\shared\webpack.config.js">
+      <Link>Properties\shared\webpack.config.js</Link>
       <Pack>False</Pack>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
-    <None Include="..\common\Webpack.props">
-      <Link>Properties\common\Webpack.props</Link>
+    <None Include="..\shared\Webpack.props">
+      <Link>Properties\shared\Webpack.props</Link>
       <Pack>false</Pack>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
-    <None Include="..\common\Webpack.targets">
-      <Link>Properties\common\Webpack.targets</Link>
+    <None Include="..\shared\Webpack.targets">
+      <Link>Properties\shared\Webpack.targets</Link>
       <Pack>false</Pack>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
@@ -49,11 +49,6 @@
     <None Include="package-lock.json" Link="Properties\package-lock.json"/>
 
     <None Update="webpack.config.js" Link="Properties\webpack.config.js"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="wwwroot\.gitignore"/>
-    <None Include="wwwroot\.gitignore"/>
   </ItemGroup>
 
 </Project>

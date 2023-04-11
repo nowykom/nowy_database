@@ -19,12 +19,12 @@
   <Target Name="NodeFindConfigs" DependsOnTargets="NodeInstall">
     <ItemGroup>
       <!-- Components -->
-      <_NodeCopyConfigsInputs Include="..\common\tsconfig.razor.json" />
+      <_NodeCopyConfigsInputs Include="..\shared\tsconfig.razor.json" />
       <!-- Services -->
-      <_NodeCopyConfigsInputs Include="..\common\tsconfig.services.json" />
+      <_NodeCopyConfigsInputs Include="..\shared\tsconfig.services.json" />
       <!-- Resources -->
-      <_NodeCopyConfigsInputs Include="..\common\tsconfig.webpack.json" />
-      <_NodeCopyConfigsInputs Include="..\common\webpack.config.js" />
+      <_NodeCopyConfigsInputs Include="..\shared\tsconfig.webpack.json" />
+      <_NodeCopyConfigsInputs Include="..\shared\webpack.config.js" />
     </ItemGroup>
     <Message Text="_NodeCompileInputsComponents: @(_NodeCompileInputsComponents)" />
   </Target>

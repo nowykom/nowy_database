@@ -53,7 +53,7 @@ public static class ServiceCollectionExtensions
 
             return config;
         });
-        services.AddSingleton<IUserRepository, DefaultUserRepository>();
+        services.AddTransient<IUserRepository, DefaultUserRepository>();
         services.AddSingleton<IUserPermissionService, DefaultUserPermissionService>();
     }
 

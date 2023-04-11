@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Nowy.Database.Client.Services;
+using Nowy.Database.Common.Services;
 using Nowy.Database.Contract.Models;
 using Nowy.Database.Contract.Services;
 using Nowy.Standard;
@@ -14,9 +15,16 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IModelService, ModelService>(sp => new ModelService());
 
+        services.AddHostedService<INowyDatabaseCacheService>(sp => new DefaultNowyDatabaseCacheService(
+            sp.GetRequiredService<ILogger<DefaultNowyDatabaseCacheService>>(),
+            sp.GetRequiredService<INowyDatabase>(),
+            sp.GetRequiredService<IEnumerable<IDatabaseStaticDataImporter>>()
+        ));
+
         services.AddTransient<INowyDatabase>(sp => new RestNowyDatabase(
             sp.GetRequiredService<IHttpClientFactory>(),
             sp.GetService<INowyDatabaseAuthService>(),
+            sp.GetService<INowyDatabaseCacheService>(),
             sp.GetRequiredService<IModelService>(),
             endpoint
         ));

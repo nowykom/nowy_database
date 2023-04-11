@@ -18,17 +18,17 @@ public abstract class BaseModel : IBaseModel
 
     [JsonIgnore] public Type ModelType => _model_type ??= this.GetType();
 
-    [JsonIgnore] public bool ShouldSave { get; set; }
+    [JsonIgnore] public bool is_modified { get; set; }
 
     [JsonPropertyName("id")] public string id { get; set; } = string.Empty;
 
     [JsonPropertyName("ids")] public IReadOnlyList<string> ids { get; set; } = Array.Empty<string>();
 
-    [JsonPropertyName("timestamp_database_insert")]
-    public long timestamp_database_insert { get; set; }
+    [JsonPropertyName("meta")]
+    public Dictionary<string, string?>? meta { get; set; }
 
-    [JsonPropertyName("timestamp_database_update")]
-    public long timestamp_database_update { get; set; }
+    [JsonPropertyName("meta_temp")]
+    public Dictionary<string, string?>? meta_temp { get; set; }
 
 
     public void SetField(string name, object? value, ILogger? logger = null)

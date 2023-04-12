@@ -55,8 +55,20 @@ public static class ServiceCollectionExtensions
 
             return config;
         });
-        services.AddTransient<IUserRepository, DefaultUserRepository>();
-        services.AddTransient<IUserPermissionService, DefaultUserPermissionService>();
+        services.AddTransient<IUserRepository, DefaultUserRepository>(sp =>
+        {
+            Console.WriteLine("Making new DefaultUserRepository");
+            DefaultUserRepository o = new(sp.GetRequiredService<INowyDatabase>(), sp.GetRequiredService<DefaultUserRepositoryConfig>());
+            Console.WriteLine("Made new DefaultUserRepository");
+            return o;
+        });
+        services.AddTransient<IUserPermissionService, DefaultUserPermissionService>(sp =>
+        {
+            Console.WriteLine("Making new DefaultUserPermissionService");
+            DefaultUserPermissionService o = new(sp.GetRequiredService<IUserRepository>());
+            Console.WriteLine("Made new DefaultUserPermissionService");
+            return o;
+        });
     }
 
     public static void AddNowyAuthServer2(this IServiceCollection services, string? database_name = null)

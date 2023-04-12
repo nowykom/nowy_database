@@ -5,15 +5,15 @@ namespace Nowy.Auth.Common.Services;
 
 public class DefaultNowyDatabaseAuthService : INowyDatabaseAuthService
 {
-    private readonly INowyAuthService _auth_service;
+    private readonly INowyAuthStateProvider _auth_state_provider;
 
-    public DefaultNowyDatabaseAuthService(INowyAuthService auth_service)
+    public DefaultNowyDatabaseAuthService(INowyAuthStateProvider auth_state_provider)
     {
-        _auth_service = auth_service;
+        _auth_state_provider = auth_state_provider;
     }
 
     public string? GetJWT()
     {
-        return this._auth_service.State.JWT;
+        return _auth_state_provider.State.JWT;
     }
 }

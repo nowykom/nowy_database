@@ -17,6 +17,7 @@ public static class ServiceCollectionExtensions
     public static void AddNowyAuthServer(this IServiceCollection services, string? database_name = null)
     {
         services.AddSingleton<INowyAuthService, DefaultNowyAuthService>();
+        services.AddSingleton<INowyAuthStateProvider, DefaultNowyAuthStateProvider>();
         services.AddSingleton<INowyDatabaseAuthService, DefaultNowyDatabaseAuthService>();
 
         services.AddAuthentication(opt =>

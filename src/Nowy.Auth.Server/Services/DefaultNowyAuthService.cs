@@ -6,12 +6,18 @@ namespace Nowy.Auth.Server.Services;
 public class DefaultNowyAuthService : INowyAuthService
 {
     private readonly IUserRepository _user_repo;
+    private readonly DefaultNowyAuthStateProvider _state_provider;
 
-    private DefaultServerNowyAuthState _state = new DefaultServerNowyAuthState();
+    private DefaultNowyAuthState _state
+    {
+        get => this._state_provider.State;
+        set => this._state_provider.State = value;
+    }
 
-    public DefaultNowyAuthService(IUserRepository user_repo)
+    public DefaultNowyAuthService(IUserRepository user_repo, INowyAuthStateProvider state_provider)
     {
         _user_repo = user_repo;
+        _state_provider = (DefaultNowyAuthStateProvider)state_provider;
     }
 
     public INowyAuthState State => _state;
@@ -44,7 +50,7 @@ public class DefaultNowyAuthService : INowyAuthService
             user_errors.Add($"Password is not correct.");
         }
 
-        return new DefaultServerNowyAuthState
+        return new DefaultNowyAuthState
         {
             IsAuthenticated = users_success.Count != 0,
             Errors = errors,
@@ -56,13 +62,5 @@ public class DefaultNowyAuthService : INowyAuthService
     {
         _state = new();
         return Task.CompletedTask;
-    }
-
-    internal class DefaultServerNowyAuthState : INowyAuthState
-    {
-        public bool IsAuthenticated { get; init; }
-        public string? JWT { get; init; }
-        public IReadOnlyList<string>? Errors { get; init; }
-        public IReadOnlyList<string>? UserErrors { get; init; }
     }
 }

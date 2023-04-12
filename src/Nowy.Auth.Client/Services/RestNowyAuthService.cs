@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Nowy.Auth.Common.Models;
+using Nowy.Auth.Contract.Models;
 using Nowy.Auth.Contract.Services;
 
 namespace Nowy.Auth.Client.Services;
@@ -8,18 +9,25 @@ public class RestNowyAuthService : INowyAuthService
 {
     private readonly HttpClient _http_client;
     private readonly string _endpoint;
+    private readonly RestNowyAuthStateProvider _state_provider;
 
     private static readonly JsonSerializerOptions _json_options = new JsonSerializerOptions() { PropertyNamingPolicy = null, };
 
-    private RestNowyAuthState _state = new RestNowyAuthState();
+    private RestNowyAuthState _state
+    {
+        get => _state_provider.State;
+        set => _state_provider.State = value;
+    }
 
     public RestNowyAuthService(
         HttpClient http_client,
-        string endpoint
+        string endpoint,
+        INowyAuthStateProvider state_provider
     )
     {
         _http_client = http_client;
         _endpoint = endpoint;
+        _state_provider = (RestNowyAuthStateProvider)state_provider;
     }
 
     public INowyAuthState State => _state;
@@ -82,13 +90,5 @@ public class RestNowyAuthService : INowyAuthService
     {
         _state = new();
         return Task.CompletedTask;
-    }
-
-    internal class RestNowyAuthState : INowyAuthState
-    {
-        public bool IsAuthenticated { get; init; }
-        public string? JWT { get; init; }
-        public IReadOnlyList<string>? Errors { get; init; }
-        public IReadOnlyList<string>? UserErrors { get; init; }
     }
 }

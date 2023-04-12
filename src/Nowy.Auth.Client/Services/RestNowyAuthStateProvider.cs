@@ -7,6 +7,6 @@ namespace Nowy.Auth.Client.Services;
 
 internal class RestNowyAuthStateProvider : INowyAuthStateProvider
 {
-    public RestNowyAuthState State { get; set; }
+    public RestNowyAuthState State { get; set; } = new RestNowyAuthState();
     INowyAuthState INowyAuthStateProvider.State => this.State;
 }

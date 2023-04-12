@@ -83,7 +83,7 @@ public class MongoRepository
 
         FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Or(
             Builders<BsonDocument>.Filter.Eq("_id", id),
-            Builders<BsonDocument>.Filter.In("_ids", id)
+            Builders<BsonDocument>.Filter.In("_ids", new[] { id, })
         );
 
         BsonDocument? document = await collection.Find(filter).FirstOrDefaultAsync();
@@ -113,7 +113,7 @@ public class MongoRepository
 
         FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Or(
             Builders<BsonDocument>.Filter.Eq("_id", id),
-            Builders<BsonDocument>.Filter.In("_ids", id)
+            Builders<BsonDocument>.Filter.In("_ids", new[] { id, })
         );
 
         BsonDocument? document = await collection.Find(filter).FirstOrDefaultAsync();
@@ -149,7 +149,7 @@ public class MongoRepository
 
         FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Or(
             Builders<BsonDocument>.Filter.Eq("_id", id),
-            Builders<BsonDocument>.Filter.In("_ids", id)
+            Builders<BsonDocument>.Filter.In("_ids", new[] { id, })
         );
 
         BsonDocument? document = await collection.Find(filter).FirstOrDefaultAsync();
@@ -182,7 +182,7 @@ public class MongoRepository
 
         FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Or(
             Builders<BsonDocument>.Filter.Eq("_id", id),
-            Builders<BsonDocument>.Filter.In("_ids", id)
+            Builders<BsonDocument>.Filter.In("_ids", new[] { id, })
         );
 
         BsonDocument? document = await collection.Find(filter).FirstOrDefaultAsync();

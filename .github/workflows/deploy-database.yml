@@ -60,16 +60,19 @@ jobs:
         run: echo Branch is ${{ github.ref_name }}
 
       - name: Upload (host key)
-        run: ssh-keyscan -t rsa nowy01.server.nowykom.de >> ~/.ssh/known_hosts
-        run: ssh-keyscan -t rsa nei0.server.schulz.dev >> ~/.ssh/known_hosts
+        run: |
+          ssh-keyscan -t rsa nowy01.server.nowykom.de >> ~/.ssh/known_hosts
+          ssh-keyscan -t rsa nei0.server.schulz.dev >> ~/.ssh/known_hosts
 
       - name: Upload (transfer files)
-        run: rsync -avz --update myapp/ root@nowy01.server.nowykom.de:/srv/nowy_database/${BRANCH}/web/  --no-perms --no-owner --no-group --delete --exclude database --exclude files
-        run: rsync -avz --update myapp/   root@nei0.server.schulz.dev:/srv/nowy_database/${BRANCH}/web/  --no-perms --no-owner --no-group --delete --exclude database --exclude files
+        run: |
+          rsync -avz --update myapp/ root@nowy01.server.nowykom.de:/srv/nowy_database/${BRANCH}/web/  --no-perms --no-owner --no-group --delete --exclude database --exclude files
+          rsync -avz --update myapp/   root@nei0.server.schulz.dev:/srv/nowy_database/${BRANCH}/web/  --no-perms --no-owner --no-group --delete --exclude database --exclude files
 
       - name: Upload (fix permissions)
-        run: ssh root@nowy01.server.nowykom.de 'chown www-data:www-data -R /srv/nowy_database/ ; service nowy_database_'${BRANCH}' restart '
-        run: ssh root@nei0.server.schulz.dev   'chown www-data:www-data -R /srv/nowy_database/ ; service nowy_database_'${BRANCH}' restart '
+        run: |
+          ssh root@nowy01.server.nowykom.de 'chown www-data:www-data -R /srv/nowy_database/ ; service nowy_database_'${BRANCH}' restart '
+          ssh root@nei0.server.schulz.dev   'chown www-data:www-data -R /srv/nowy_database/ ; service nowy_database_'${BRANCH}' restart '
 
       - name: Cleanup
         if: always()

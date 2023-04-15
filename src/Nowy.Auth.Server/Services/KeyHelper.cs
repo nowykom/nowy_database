@@ -14,6 +14,7 @@ public static class KeyHelper
         List<string> paths = new()
         {
             "/opt/nowy/auth/symmetric-key.txt",
+            "/opt/ts/auth/symmetric-key.txt",
         };
 
         foreach (string path in paths)

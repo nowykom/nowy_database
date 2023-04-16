@@ -11,8 +11,21 @@ using Nowy.Database.Contract.Services;
 using Nowy.Database.Web.Endpoints;
 using Nowy.Database.Web.Services;
 using Nowy.Standard;
+using Serilog;
+using Serilog.Events;
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext());
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

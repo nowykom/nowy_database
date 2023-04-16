@@ -24,11 +24,9 @@ public abstract class BaseModel : IBaseModel
 
     [JsonPropertyName("ids")] public IReadOnlyList<string> ids { get; set; } = Array.Empty<string>();
 
-    [JsonPropertyName("meta")]
-    public Dictionary<string, string?>? meta { get; set; }
+    [JsonPropertyName("meta")] public Dictionary<string, string?>? meta { get; set; }
 
-    [JsonPropertyName("meta_temp")]
-    public Dictionary<string, string?>? meta_temp { get; set; }
+    [JsonPropertyName("meta_temp")] public Dictionary<string, string?>? meta_temp { get; set; }
 
 
     public void SetField(string name, object? value, ILogger? logger = null)

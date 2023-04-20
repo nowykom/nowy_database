@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -115,7 +116,43 @@ class Build : NukeBuild
         {
             DotNetTasks.DotNetRestore(s => s
                 .SetProjectFile(Solution));
+                
+            _cleanOutdatedPackages();
+
+            DotNetTasks.DotNetRestore(s => s
+                .SetProjectFile(Solution));
         });
+
+    Target CleanOutdatedPackages => _ => _
+        .Executes(_cleanOutdatedPackages);
+
+    void _cleanOutdatedPackages()
+    {
+        AbsolutePath path_global_packages = RootDirectory / "build" / "global-packages";
+        IReadOnlyCollection<AbsolutePath> package_directories = path_global_packages.GlobDirectories("*");
+        foreach (AbsolutePath package_directory in package_directories)
+        {
+            Console.WriteLine(package_directory.Name);
+            IReadOnlyCollection<AbsolutePath> version_directories = package_directory.GlobDirectories("*");
+            List<(AbsolutePath path, DateTime date)> version_directories_with_date = new();
+            foreach (AbsolutePath version_directory in version_directories)
+            {
+                DateTime date = Directory.GetCreationTimeUtc(version_directory.ToString());
+                Console.WriteLine($"- {version_directory.Name} {date}");
+                version_directories_with_date.Add(( version_directory, date ));
+            }
+
+            DateTime latest_date = version_directories_with_date.OrderByDescending(o => o.date).Select(o => o.date).FirstOrDefault();
+            if (latest_date != default)
+            {
+                foreach ((AbsolutePath path, DateTime date) version_directory_with_date in
+                         version_directories_with_date.Where(o => ( latest_date - o.date ).TotalSeconds > 60))
+                {
+                    DeleteDirectory(version_directory_with_date.path);
+                }
+            }
+        }
+    }
 
     Target Compile => _ => _
         .DependsOn(Restore)

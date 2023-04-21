@@ -4,11 +4,11 @@ import * as socket_io from "socket.io";
 const port = parseInt(String(process.argv[2] || 5000));
 
 interface ServerToClientEvents {
-  v1_broadcast_event: (data: string) => void;
+  'v1:broadcast_event': (category: string, data: string) => void;
 }
 
 interface ClientToServerEvents {
-  v1_broadcast_event: (data: string) => void;
+  'v1:broadcast_event': (category: string, data: string) => void;
 }
 
 interface InterServerEvents {
@@ -37,8 +37,9 @@ const io = new socket_io.Server<
 >(httpServer, { /* options */});
 
 io.on("connection", (socket) => {
-  socket.on("v1_broadcast_event", function (data) {
-    socket.broadcast.emit("v1_broadcast_event", data);
+  socket.on("v1:broadcast_event", function (category, data) {
+    // @ts-ignore
+    socket.broadcast.emit(`v1:broadcast_event:${category}`, category, data);
   });
 });
 

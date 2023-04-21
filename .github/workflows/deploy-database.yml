@@ -11,7 +11,7 @@ on:
       - 'src/Nowy.Database*/**'
       - 'src/Nowy.Auth*/**'
       - 'nukebuild/**'
-      - '.github/**'
+      - '.github/workflows/deploy-database.yml'
   workflow_dispatch:
 
 permissions:
@@ -50,40 +50,26 @@ jobs:
           NuGetAzureDevOpsPassword: ${{ secrets.NUGET_AZUREDEVOPS_PASSWORD }}
           NuGetOrgApiKey: ${{ secrets.NUGET_ORG_APIKEY }}
 
-      - name: Publish
-        run: rm -rf ./myapp ; dotnet publish -c Release -r linux-x64 -o ./myapp nowy_database/src/Nowy.Database.Web/Nowy.Database.Web.csproj
 
-      - name: List published
-        run: find ./myapp
-
-      - name: Branch
-        run: echo Branch is ${{ github.ref_name }}
-
-
-      - name: Upload (host key)
+      - name: Publish and Upload (web, nowykom.de)
         run: |
+          echo Branch is ${{ github.ref_name }}
+          rm -rf ./myapp ; dotnet publish -c Release -r linux-x64 -o ./myapp nowy_database/src/Nowy.Database.Web/Nowy.Database.Web.csproj
+          find ./myapp
           ssh-keyscan -t rsa nowy01.server.nowykom.de >> ~/.ssh/known_hosts
-
-      - name: Upload (transfer files)
-        run: |
           rsync -avz --update myapp/ root@nowy01.server.nowykom.de:/srv/nowy_database/${BRANCH}/web/  --no-perms --no-owner --no-group --delete --exclude database --exclude files
-
-      - name: Upload (fix permissions)
-        run: |
           ssh root@nowy01.server.nowykom.de 'chown www-data:www-data -R /srv/nowy_database/ ; service nowy_database_'${BRANCH}' restart '
 
 
-      - name: Upload (host key)
+      - name: Publish and Upload (web, schulz.dev)
         run: |
+          echo Branch is ${{ github.ref_name }}
+          rm -rf ./myapp ; dotnet publish -c Release -r linux-x64 -o ./myapp nowy_database/src/Nowy.Database.Web/Nowy.Database.Web.csproj
+          find ./myapp
           ssh-keyscan -t rsa nei0.server.schulz.dev >> ~/.ssh/known_hosts
-
-      - name: Upload (transfer files)
-        run: |
           rsync -avz --update myapp/ tobias@nei0.server.schulz.dev:/tmp/nowy_database/  --no-perms --no-owner --no-group --delete --exclude database --exclude files
-
-      - name: Upload (fix permissions)
-        run: |
           ssh tobias@nei0.server.schulz.dev   'sudo su -c "rsync -av /tmp/nowy_database/ /srv/nowy_database/'${BRANCH}'/web/ ; chown www-data:www-data -R /srv/nowy_database/ ; service nowy_database_'${BRANCH}' restart "'
+
 
 
       - name: Cleanup

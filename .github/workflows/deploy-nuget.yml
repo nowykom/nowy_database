@@ -11,7 +11,7 @@ on:
       - 'src/Nowy.Database*/**'
       - 'src/Nowy.Auth*/**'
       - 'nukebuild/**'
-      - '.github/**'
+      - '.github/workflows/deploy-nuget.yml'
   workflow_dispatch:
 
 permissions:

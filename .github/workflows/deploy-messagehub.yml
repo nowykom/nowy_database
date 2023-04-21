@@ -1,0 +1,72 @@
+name: Nowy Database
+
+env:
+  BRANCH: ${{ github.ref_name }}
+
+on:
+  push:
+    branches: [ "main", "tobias" ]
+    paths:
+      - 'src/Nowy.MessageHub*/**'
+      - '.github/workflows/deploy-messagehub.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: nowy_database
+
+      - name: Cleanup
+        run: rm -rf ~/.dotnet/toolResolverCache
+
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: 'just-a-placeholder-so-we-dont-get-errors'
+          if_key_exists: ignore
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Build
+        run: cd nowy_database; cd src/nowy_messagehub; npm run build
+        env:
+          NuGetAzureDevOpsPassword: ${{ secrets.NUGET_AZUREDEVOPS_PASSWORD }}
+          NuGetOrgApiKey: ${{ secrets.NUGET_ORG_APIKEY }}
+
+
+      - name: Publish and Upload (web, nowykom.de)
+        run: |
+          echo Branch is ${{ github.ref_name }}
+          rm -rf ./myapp ; rsync -a nowy_database/src/nowy_messagehub/ ./myapp/
+          find ./myapp
+          ssh-keyscan -t rsa nowy01.server.nowykom.de >> ~/.ssh/known_hosts
+          rsync -avz --update myapp/ root@nowy01.server.nowykom.de:/srv/nowy_messagehub/${BRANCH}/web/  --no-perms --no-owner --no-group --delete --exclude database --exclude files
+          ssh root@nowy01.server.nowykom.de 'chown www-data:www-data -R /srv/nowy_messagehub/ ; service nowy_messagehub_'${BRANCH}' restart '
+
+
+      - name: Publish and Upload (web, schulz.dev)
+        run: |
+          echo Branch is ${{ github.ref_name }}
+          rm -rf ./myapp ; rsync -a nowy_database/src/nowy_messagehub/ ./myapp/
+          find ./myapp
+          ssh-keyscan -t rsa nei0.server.schulz.dev >> ~/.ssh/known_hosts
+          rsync -avz --update myapp/ tobias@nei0.server.schulz.dev:/tmp/nowy_messagehub/  --no-perms --no-owner --no-group --delete --exclude database --exclude files
+          ssh tobias@nei0.server.schulz.dev   'sudo su -c "rsync -av /tmp/nowy_messagehub/ /srv/nowy_messagehub/'${BRANCH}'/web/ ; chown www-data:www-data -R /srv/nowy_messagehub/ ; service nowy_messagehub_'${BRANCH}' restart "'
+
+
+
+      - name: Cleanup
+        if: always()
+        run: rm -rf nowy_database
+
+

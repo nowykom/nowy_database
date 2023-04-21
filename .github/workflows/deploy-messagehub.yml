@@ -1,4 +1,4 @@
-name: Nowy Database
+name: Nowy MessageHub
 
 env:
   BRANCH: ${{ github.ref_name }}

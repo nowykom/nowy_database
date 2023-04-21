@@ -1,16 +1,14 @@
-import {createServer} from "http";
-import {Server} from "socket.io";
+import * as http from "http";
+import * as socket_io from "socket.io";
 
 const port = parseInt(String(process.argv[2] || 5000));
 
 interface ServerToClientEvents {
-  noArg: () => void;
-  basicEmit: (a: number, b: string, c: Buffer) => void;
-  withAck: (d: string, callback: (e: number) => void) => void;
+  v1_broadcast_event: (data: string) => void;
 }
 
 interface ClientToServerEvents {
-  hello: () => void;
+  v1_broadcast_event: (data: string) => void;
 }
 
 interface InterServerEvents {
@@ -30,8 +28,8 @@ process.on('uncaughtException', function (exception) {
   console.log(exception);
 });
 
-const httpServer = createServer();
-const io = new Server<
+const httpServer = http.createServer();
+const io = new socket_io.Server<
         ClientToServerEvents,
         ServerToClientEvents,
         InterServerEvents,
@@ -39,9 +37,10 @@ const io = new Server<
 >(httpServer, { /* options */});
 
 io.on("connection", (socket) => {
-  // ...
+  socket.on("v1_broadcast_event", function (data) {
+    socket.broadcast.emit("v1_broadcast_event", data);
+  });
 });
-
 
 httpServer.listen(port);
 

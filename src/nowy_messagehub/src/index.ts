@@ -1,6 +1,8 @@
 import {createServer} from "http";
 import {Server} from "socket.io";
 
+const port = parseInt(String(process.argv[2] || 5000));
+
 interface ServerToClientEvents {
   noArg: () => void;
   basicEmit: (a: number, b: string, c: Buffer) => void;
@@ -21,6 +23,8 @@ interface SocketData {
 }
 
 
+console.log(`Server: start on port ${port}`)
+
 const httpServer = createServer();
 const io = new Server<
         ClientToServerEvents,
@@ -33,4 +37,4 @@ io.on("connection", (socket) => {
   // ...
 });
 
-httpServer.listen(3000);
+httpServer.listen(port);

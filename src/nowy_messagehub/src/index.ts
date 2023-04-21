@@ -23,7 +23,12 @@ interface SocketData {
 }
 
 
-console.log(`Server: start on port ${port}`)
+console.log(`Server: start on port ${port}`);
+
+process.on('uncaughtException', function (exception) {
+  // handle or ignore error
+  console.log(exception);
+});
 
 const httpServer = createServer();
 const io = new Server<

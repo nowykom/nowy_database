@@ -7,7 +7,7 @@ on:
   push:
     branches: [ "main", "tobias" ]
     paths:
-      - 'src/Nowy.MessageHub*/**'
+      - 'src/nowy_messagehub/**'
       - '.github/workflows/deploy-messagehub.yml'
   workflow_dispatch:
 

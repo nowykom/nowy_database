@@ -38,7 +38,7 @@ jobs:
           node-version: 16
 
       - name: Build
-        run: cd nowy_database; cd src/nowy_messagehub; npm run build
+        run: cd nowy_database; cd src/nowy_messagehub; npm ci; npm run build
         env:
           NuGetAzureDevOpsPassword: ${{ secrets.NUGET_AZUREDEVOPS_PASSWORD }}
           NuGetOrgApiKey: ${{ secrets.NUGET_ORG_APIKEY }}

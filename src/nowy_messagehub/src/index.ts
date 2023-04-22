@@ -37,9 +37,10 @@ const io = new socket_io.Server<
 >(httpServer, { /* options */});
 
 io.on("connection", (socket) => {
-  socket.on("v1:broadcast_event", function (category, data) {
+  socket.on("v1:broadcast_event", function (event_name, data) {
+    console.log(`event_name: ${event_name}`);
     // @ts-ignore
-    socket.broadcast.emit(`v1:broadcast_event:${category}`, category, data);
+    socket.broadcast.emit(`v1:broadcast_event:${event_name}`, event_name, data);
   });
 });
 

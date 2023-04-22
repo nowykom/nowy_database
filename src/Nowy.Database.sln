@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nowy.Database.Contract", "N
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nowy.Database.Web", "Nowy.Database.Web\Nowy.Database.Web.csproj", "{C0AD4D61-A7FB-4118-8915-60FCAE023B62}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nowy.Database.Client.TestProgram", "Nowy.Database.Client.TestProgram\Nowy.Database.Client.TestProgram.csproj", "{BDAF9D6E-8868-4EBF-8260-A53DD47DDA8D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,5 +80,9 @@ Global
 		{C0AD4D61-A7FB-4118-8915-60FCAE023B62}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0AD4D61-A7FB-4118-8915-60FCAE023B62}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0AD4D61-A7FB-4118-8915-60FCAE023B62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDAF9D6E-8868-4EBF-8260-A53DD47DDA8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDAF9D6E-8868-4EBF-8260-A53DD47DDA8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDAF9D6E-8868-4EBF-8260-A53DD47DDA8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDAF9D6E-8868-4EBF-8260-A53DD47DDA8D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

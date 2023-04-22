@@ -2,15 +2,23 @@ using Microsoft.Extensions.DependencyInjection;
 using Nowy.Database.Common.Models;
 using Nowy.Database.Contract.Models;
 using Nowy.Database.Contract.Services;
+using Serilog;
+using Xunit.Abstractions;
 
 namespace Nowy.Database.Client.Tests.Tests;
 
 public class UnitTest1
 {
-    private ServiceProvider _sp;
+    private readonly ServiceProvider _sp;
 
-    public UnitTest1()
+    public UnitTest1(ITestOutputHelper output)
     {
+        Log.Logger = new LoggerConfiguration()
+            // add the xunit test output sink to the serilog logger
+            // https://github.com/trbenning/serilog-sinks-xunit#serilog-sinks-xunit
+            .WriteTo.TestOutput(output)
+            .CreateLogger();
+
         ServiceCollection services = new();
 
         services.AddHttpClient();

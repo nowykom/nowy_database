@@ -68,11 +68,11 @@ public class UnitTest2
 
             await hub.WaitUntilConnectedAsync("test1", TimeSpan.FromMilliseconds(5000));
 
-            await hub.BroadcastMessageAsync("abc", new List<int> { 1, 2, 3, });
+            await hub.BroadcastMessageAsync("abc", new object[] { new List<int> { 1, 2, 3, }, }, new NowyMessageOptions());
 
             Assert.Empty(_receiver1.ReceivedBuffer);
 
-            await hub.BroadcastMessageAsync("test1", new List<int> { 1, 2, 3, });
+            await hub.BroadcastMessageAsync("test1", new object[] { new List<int> { 1, 2, 3, } }, new NowyMessageOptions());
 
             for (int i = 0; i < 50; i++)
             {

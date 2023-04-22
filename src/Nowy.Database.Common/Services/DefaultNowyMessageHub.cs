@@ -13,9 +13,9 @@ internal class DefaultNowyMessageHub : INowyMessageHub
         _socket_io_service = socket_io_service;
     }
 
-    public async Task BroadcastMessageAsync<TValue>(string event_name, TValue value) where TValue : class
+    public async Task BroadcastMessageAsync(string event_name, object[] values, NowyMessageOptions? options)
     {
-        await _socket_io_service.BroadcastMessageAsync(event_name, value);
+        await _socket_io_service.BroadcastMessageAsync(event_name, values, options);
     }
 
     public async Task WaitUntilConnectedAsync(string event_name, CancellationToken token)

@@ -55,12 +55,11 @@ public class Worker1 : BackgroundService
     {
         await Task.Delay(TimeSpan.FromSeconds(2));
 
-        await _message_hub.BroadcastMessageAsync("abc", new List<int> { 1, 2, 3, });
+        await _message_hub.BroadcastMessageAsync("abc", new object[] { new List<int> { 1, 2, 3, } }, new NowyMessageOptions());
 
 
-        await _message_hub.BroadcastMessageAsync("test1", new List<int> { 1, 2, 3, });
+        await _message_hub.BroadcastMessageAsync("test1", new object[] { new List<int> { 1, 2, 3, } }, new NowyMessageOptions());
 
         await Task.Delay(TimeSpan.FromSeconds(5));
-
     }
 }

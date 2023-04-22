@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Nowy.Database.Contract.Services;
@@ -70,12 +71,14 @@ internal sealed class SocketIOService : BackgroundService
         if (!matches)
             return;
 
-        int values_count = response.GetValue<int>(1);
+        MessageOptions message_options = response.GetValue<MessageOptions>(1);
+
+        int values_count = response.GetValue<int>(2);
         List<string> values_as_json = new();
 
         for (int i = 0; i < values_count; i++)
         {
-            string value_as_json = response.GetValue<string>(2 + i);
+            string value_as_json = response.GetValue<string>(3 + i);
             values_as_json.Add(value_as_json);
         }
 
@@ -134,12 +137,18 @@ internal sealed class SocketIOService : BackgroundService
         return is_connected ?? false;
     }
 
-    public async Task BroadcastMessageAsync(string event_name, params object[] values)
+    public async Task BroadcastMessageAsync(string event_name, object[] values, NowyMessageOptions? message_options)
     {
         List<object> data = new();
         data.Add(event_name);
-        data.Add(values.Length);
 
+        MessageOptions socket_message_options = new()
+        {
+            except_sender = message_options?.ExceptSender ?? false,
+        };
+        data.Add(socket_message_options);
+
+        data.Add(values.Length);
         foreach (object o in values)
         {
             data.Add(o as string ?? JsonSerializer.Serialize(o, _json_options));
@@ -244,5 +253,11 @@ internal sealed class SocketIOService : BackgroundService
                 _logger.LogError(ex, $"Connect to Socket IO: Error during {nameof(ExecuteAsync)}");
             }
         }).ToArray());
+    }
+
+
+    internal class MessageOptions
+    {
+        [JsonPropertyName("except_sender")] public bool except_sender { get; set; }
     }
 }

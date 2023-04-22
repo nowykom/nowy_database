@@ -41,8 +41,9 @@ io.on("connection", (socket) => {
     const event_name = values[0];
     console.log(`event_name: ${JSON.stringify(event_name)}`);
     console.log(`values: ${JSON.stringify(values)}`);
+    
     // @ts-ignore
-    socket.broadcast.emit(`v1:broadcast_event`, data);
+    socket.broadcast.emit(`v1:broadcast_event`, values);
   });
 });
 

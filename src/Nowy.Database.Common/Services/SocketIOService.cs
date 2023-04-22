@@ -41,10 +41,7 @@ internal sealed class SocketIOService : BackgroundService
 
             foreach (INowyMessageHubReceiver message_hub_receiver in _receivers)
             {
-                foreach (string event_name in message_hub_receiver.GetEventNamePrefixes())
-                {
-                    client.On($"v1:broadcast_event", response => _handleResponseAsync(response, message_hub_receiver).Forget());
-                }
+                client.On($"v1:broadcast_event", response => _handleResponseAsync(response, message_hub_receiver).Forget());
             }
 
             clients.Add(new EndpointEntry(client, endpoint_config));
@@ -55,9 +52,21 @@ internal sealed class SocketIOService : BackgroundService
 
     private async Task _handleResponseAsync(SocketIOResponse response, INowyMessageHubReceiver receiver)
     {
-        _logger.LogInformation($"Received message from Socket IO: {123}");
-
         string event_name = response.GetValue<string>(0);
+
+        bool matches = false;
+        foreach (string event_name_prefix in receiver.GetEventNamePrefixes())
+        {
+            if (event_name.StartsWith(event_name_prefix))
+            {
+                matches = true;
+                break;
+            }
+        }
+
+        if (!matches)
+            return;
+
         int values_count = response.GetValue<int>(1);
         List<string> values_as_json = new();
 
@@ -66,6 +75,8 @@ internal sealed class SocketIOService : BackgroundService
             string value_as_json = response.GetValue<string>(2 + i);
             values_as_json.Add(value_as_json);
         }
+
+        _logger.LogInformation($"Received message from Socket IO: {JsonSerializer.Serialize(values_as_json)}");
 
         _Payload payload = new(values_as_json, _json_options);
 

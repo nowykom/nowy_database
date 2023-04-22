@@ -4,11 +4,11 @@ import * as socket_io from "socket.io";
 const port = parseInt(String(process.argv[2] || 5000));
 
 interface ServerToClientEvents {
-  'v1:broadcast_event': (category: string, data: string) => void;
+  'v1:broadcast_event': (...data: any[]) => void;
 }
 
 interface ClientToServerEvents {
-  'v1:broadcast_event': (category: string, data: string) => void;
+  'v1:broadcast_event': (...data: any[]) => void;
 }
 
 interface InterServerEvents {
@@ -37,13 +37,13 @@ const io = new socket_io.Server<
 >(httpServer, { /* options */});
 
 io.on("connection", (socket) => {
-  socket.on("v1:broadcast_event", function (values) {
+  socket.on("v1:broadcast_event", function (...values) {
     const event_name = values[0];
     console.log(`event_name: ${JSON.stringify(event_name)}`);
     console.log(`values: ${JSON.stringify(values)}`);
-    
-    // @ts-ignore
-    socket.broadcast.emit(`v1:broadcast_event`, values);
+
+    io.sockets.emit(`v1:broadcast_event`, ...values);
+    socket.broadcast.emit(`v1:broadcast_event`, ...values);
   });
 });
 

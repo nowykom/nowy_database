@@ -56,7 +56,7 @@ internal sealed class SocketIOService : BackgroundService
     private async Task _handleResponseAsync(SocketIOResponse response, INowyMessageHubReceiver receiver)
     {
         string event_name = response.GetValue<string>(0);
-        _logger.LogInformation($"Received message from Socket IO: event_name={JsonSerializer.Serialize(event_name)}");
+        _logger.LogInformation("Received message from Socket IO: {event_name}", event_name);
 
         bool matches = false;
         foreach (string event_name_prefix in receiver.GetEventNamePrefixes())
@@ -82,7 +82,7 @@ internal sealed class SocketIOService : BackgroundService
             values_as_json.Add(value_as_json);
         }
 
-        _logger.LogInformation($"Received message from Socket IO: {JsonSerializer.Serialize(values_as_json)}");
+        _logger.LogInformation("Received message from Socket IO: {data}", values_as_json);
 
         _Payload payload = new(values_as_json, _json_options);
 
@@ -154,7 +154,7 @@ internal sealed class SocketIOService : BackgroundService
             data.Add(o as string ?? JsonSerializer.Serialize(o, _json_options));
         }
 
-        _logger.LogInformation($"Send message to Socket IO: {JsonSerializer.Serialize(data)}");
+        _logger.LogInformation("Send message to Socket IO: {data}", data);
 
         await Task.WhenAll(this._clients.Select(async client_entry =>
         {
@@ -234,7 +234,7 @@ internal sealed class SocketIOService : BackgroundService
                     {
                         try
                         {
-                            _logger.LogInformation($"Connect to Socket IO: {client_entry.EndpointConfig.Url}");
+                            _logger.LogInformation("Connect to Socket IO: {url}", client_entry.EndpointConfig.Url);
                             await client.ConnectAsync();
                         }
                         catch (Exception ex)

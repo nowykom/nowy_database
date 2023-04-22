@@ -38,7 +38,8 @@ const io = new socket_io.Server<
 
 io.on("connection", (socket) => {
   socket.on("v1:broadcast_event", function (event_name, data) {
-    console.log(`event_name: ${event_name}`);
+    console.log(`event_name: ${JSON.stringify(event_name)}`);
+    console.log(`data: ${JSON.stringify(data)}`);
     // @ts-ignore
     socket.broadcast.emit(`v1:broadcast_event`, event_name, data);
   });

@@ -45,7 +45,7 @@ io.on("connection", (socket) => {
     console.log(`options: ${JSON.stringify(options)}`);
     console.log(`values: ${JSON.stringify(values)}`);
 
-    if (options['except_me']) {
+    if (options['except_sender']) {
       socket.broadcast.emit(`v1:broadcast_event`, ...values);
     } else {
       io.sockets.emit(`v1:broadcast_event`, ...values);

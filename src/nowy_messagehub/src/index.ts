@@ -40,7 +40,7 @@ io.on("connection", (socket) => {
   socket.on("v1:broadcast_event", function (event_name, data) {
     console.log(`event_name: ${event_name}`);
     // @ts-ignore
-    socket.broadcast.emit(`v1:broadcast_event:${event_name}`, event_name, data);
+    socket.broadcast.emit(`v1:broadcast_event`, event_name, data);
   });
 });
 

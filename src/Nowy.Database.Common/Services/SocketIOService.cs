@@ -43,7 +43,7 @@ internal sealed class SocketIOService : BackgroundService
             {
                 foreach (string event_name in message_hub_receiver.GetEventNamePrefixes())
                 {
-                    client.On($"v1:broadcast_event:{event_name}", response => _handleResponseAsync(response, message_hub_receiver).Forget());
+                    client.On($"v1:broadcast_event", response => _handleResponseAsync(response, message_hub_receiver).Forget());
                 }
             }
 
@@ -94,7 +94,7 @@ internal sealed class SocketIOService : BackgroundService
                 if (!client.Connected)
                     throw new InvalidOperationException($"Endpoint '{client_entry.EndpointConfig.Url}' is not connected.");
 
-                await client.EmitAsync(eventName: $"v1:broadcast_event:{event_name}", data: data);
+                await client.EmitAsync(eventName: $"v1:broadcast_event", data: data);
             }
         }));
     }

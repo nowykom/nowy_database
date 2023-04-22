@@ -39,11 +39,17 @@ const io = new socket_io.Server<
 io.on("connection", (socket) => {
   socket.on("v1:broadcast_event", function (...values) {
     const event_name = values[0];
+    const options = values[1];
+    const count_values = values[2];
     console.log(`event_name: ${JSON.stringify(event_name)}`);
+    console.log(`options: ${JSON.stringify(options)}`);
     console.log(`values: ${JSON.stringify(values)}`);
 
-    io.sockets.emit(`v1:broadcast_event`, ...values);
-    socket.broadcast.emit(`v1:broadcast_event`, ...values);
+    if (options['except_me']) {
+      socket.broadcast.emit(`v1:broadcast_event`, ...values);
+    } else {
+      io.sockets.emit(`v1:broadcast_event`, ...values);
+    }
   });
 });
 

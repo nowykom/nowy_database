@@ -62,11 +62,11 @@ public class UnitTest2
             await hosted_service.StartAsync(cts.Token);
         }
 
-        await Task.Delay(TimeSpan.FromSeconds(2));
-
         try
         {
             INowyMessageHub hub = this._sp.GetRequiredService<INowyMessageHub>();
+
+            await hub.WaitUntilConnectedAsync("test1", TimeSpan.FromMilliseconds(5000));
 
             await hub.BroadcastMessageAsync("abc", new List<int> { 1, 2, 3, });
 
@@ -74,7 +74,12 @@ public class UnitTest2
 
             await hub.BroadcastMessageAsync("test1", new List<int> { 1, 2, 3, });
 
-            await Task.Delay(TimeSpan.FromSeconds(7));
+            for (int i = 0; i < 50; i++)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(100));
+                if (_receiver1.ReceivedBuffer.Count != 0)
+                    break;
+            }
 
             Assert.NotEmpty(_receiver1.ReceivedBuffer);
         }

@@ -13,8 +13,18 @@ internal class DefaultNowyMessageHub : INowyMessageHub
         _socket_io_service = socket_io_service;
     }
 
-    public async Task BroadcastMessageAsync<TValue>(string category, TValue value) where TValue : class
+    public async Task BroadcastMessageAsync<TValue>(string event_name, TValue value) where TValue : class
     {
-        await _socket_io_service.BroadcastMessageAsync(category, value);
+        await _socket_io_service.BroadcastMessageAsync(event_name, value);
+    }
+
+    public async Task WaitUntilConnectedAsync(string event_name, CancellationToken token)
+    {
+        await _socket_io_service.WaitUntilConnectedAsync(event_name, token);
+    }
+
+    public async Task WaitUntilConnectedAsync(string event_name, TimeSpan delay)
+    {
+        await _socket_io_service.WaitUntilConnectedAsync(event_name, delay);
     }
 }

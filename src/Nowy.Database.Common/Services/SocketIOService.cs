@@ -39,9 +39,11 @@ internal sealed class SocketIOService : BackgroundService
                 }
             });
 
+            // client.OnAny((a, b) => { _logger.LogInformation($"Received message from Socket IO: event_name={a}, b={JsonSerializer.Serialize(b)}"); });
+
             foreach (INowyMessageHubReceiver message_hub_receiver in _receivers)
             {
-                client.On($"v1:broadcast_event", response => _handleResponseAsync(response, message_hub_receiver).Forget());
+                client.On("v1:broadcast_event", response => _handleResponseAsync(response, message_hub_receiver).Forget());
             }
 
             clients.Add(new EndpointEntry(client, endpoint_config));
@@ -53,6 +55,7 @@ internal sealed class SocketIOService : BackgroundService
     private async Task _handleResponseAsync(SocketIOResponse response, INowyMessageHubReceiver receiver)
     {
         string event_name = response.GetValue<string>(0);
+        _logger.LogInformation($"Received message from Socket IO: event_name={JsonSerializer.Serialize(event_name)}");
 
         bool matches = false;
         foreach (string event_name_prefix in receiver.GetEventNamePrefixes())
@@ -83,6 +86,54 @@ internal sealed class SocketIOService : BackgroundService
         await receiver.ReceiveMessageAsync(event_name, payload);
     }
 
+    public async Task WaitUntilConnectedAsync(string event_name, TimeSpan delay)
+    {
+        using CancellationTokenSource cts = new();
+        cts.CancelAfter(delay);
+        await WaitUntilConnectedAsync(event_name, cts.Token);
+    }
+
+    public async Task WaitUntilConnectedAsync(string event_name, CancellationToken token)
+    {
+        List<EndpointEntry> matching_endpoint_entries = new();
+        foreach (EndpointEntry client_entry in this._clients)
+        {
+            if (client_entry.EndpointConfig.IsEventNameAllowed(event_name))
+            {
+                matching_endpoint_entries.Add(client_entry);
+            }
+        }
+
+        while (!token.IsCancellationRequested)
+        {
+            bool is_connected = matching_endpoint_entries.Any(o => o.Client.Connected);
+            if (is_connected)
+            {
+                break;
+            }
+
+            await Task.Delay(100);
+        }
+    }
+
+    private bool _isConnected(string event_name)
+    {
+        bool? is_connected = null;
+
+        foreach (EndpointEntry client_entry in this._clients)
+        {
+            if (client_entry.EndpointConfig.IsEventNameAllowed(event_name))
+            {
+                if (client_entry.Client.Connected)
+                {
+                    is_connected = true;
+                }
+            }
+        }
+
+        return is_connected ?? false;
+    }
+
     public async Task BroadcastMessageAsync(string event_name, params object[] values)
     {
         List<object> data = new();
@@ -105,7 +156,7 @@ internal sealed class SocketIOService : BackgroundService
                 if (!client.Connected)
                     throw new InvalidOperationException($"Endpoint '{client_entry.EndpointConfig.Url}' is not connected.");
 
-                await client.EmitAsync(eventName: $"v1:broadcast_event", data: data);
+                await client.EmitAsync(eventName: "v1:broadcast_event", data: data.ToArray());
             }
         }));
     }

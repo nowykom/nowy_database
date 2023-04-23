@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Nowy.Database.Common.Models;
 using Nowy.Database.Contract.Models;
 using Nowy.Database.Contract.Services;
+using Nowy.MessageHub.Client;
 using Serilog;
 using Xunit.Abstractions;
 
@@ -23,8 +24,8 @@ public class UnitTest1
 
         services.AddHttpClient();
 
-        string endpoint = "https://main.database.nowykom.de";
-        services.AddNowyDatabaseClient(endpoint: endpoint);
+        services.AddNowyDatabaseClient("https://main.database.nowykom.de");
+        services.AddNowyMessageHubClient(config => { config.AddEndpoint("https://main.messagehub.schulz.dev"); });
 
         this._sp = services.BuildServiceProvider();
     }

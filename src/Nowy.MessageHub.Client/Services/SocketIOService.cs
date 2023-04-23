@@ -68,7 +68,10 @@ internal sealed class SocketIOService : BackgroundService
     private async void _handleBroadcastResponseAsync(SocketIOResponse response)
     {
         string event_name = response.GetValue<string>(0);
-        this._logger.LogInformation("Received message from Socket IO: {event_name}", event_name);
+        MessageOptions message_options = response.GetValue<MessageOptions>(1);
+        int values_count = response.GetValue<int>(2);
+
+        this._logger.LogInformation("Received message from Socket IO: {event_name} with {values_count} values", event_name, values_count);
 
         async ValueTask handle_async(INowyMessageHubReceiver receiver)
         {
@@ -85,9 +88,6 @@ internal sealed class SocketIOService : BackgroundService
             if (!matches)
                 return;
 
-            MessageOptions message_options = response.GetValue<MessageOptions>(1);
-
-            int values_count = response.GetValue<int>(2);
             List<string> values_as_json = new();
 
             for (int i = 0; i < values_count; i++)
@@ -96,7 +96,7 @@ internal sealed class SocketIOService : BackgroundService
                 values_as_json.Add(value_as_json);
             }
 
-            this._logger.LogInformation("Received message from Socket IO: {data}", values_as_json);
+            this._logger.LogInformation("Handle message from Socket IO: {event_name}: {data}", event_name, values_as_json);
 
             _Payload payload = new(values_as_json, _json_options);
 

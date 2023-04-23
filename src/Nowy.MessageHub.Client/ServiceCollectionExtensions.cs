@@ -1,9 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Nowy.Database.Common.Services;
 using Nowy.Database.Contract.Services;
+using Nowy.MessageHub.Client.Services;
 
-namespace Nowy.Database.Common;
+namespace Nowy.MessageHub.Client;
 
 public static class ServiceCollectionExtensions
 {
@@ -25,6 +25,13 @@ public static class ServiceCollectionExtensions
             sp.GetRequiredService<IEnumerable<INowyMessageHubReceiver>>()
         ));
         services.AddHostedServiceByWrapper<SocketIOService>();
+
+        services.AddSingleton<INowyMessageHubEventQueue>(sp => sp.GetRequiredService<DefaultNowyMessageHubEventQueue>());
+        services.AddSingleton<DefaultNowyMessageHubEventQueue>(sp => new DefaultNowyMessageHubEventQueue(
+            sp.GetRequiredService<ILogger<DefaultNowyMessageHubEventQueue>>(),
+            sp.GetRequiredService<INowyMessageHub>()
+        ));
+        services.AddHostedServiceByWrapper<DefaultNowyMessageHubEventQueue>();
     }
 }
 
@@ -47,19 +54,19 @@ internal sealed class NowyMessageHubEndpointConfig : INowyMessageHubEndpointConf
 
     public NowyMessageHubEndpointConfig(string url)
     {
-        _url = url;
+        this._url = url;
     }
 
-    public string Url => _url;
+    public string Url => this._url;
 
     public void SetFilterOutgoing(Func<string, bool>? func)
     {
-        _func = func;
+        this._func = func;
     }
 
     public bool IsEventNameAllowed(string event_name)
     {
-        return _func?.Invoke(event_name) ?? true;
+        return this._func?.Invoke(event_name) ?? true;
     }
 }
 
@@ -72,23 +79,23 @@ internal sealed class NowyMessageHubConfig : INowyMessageHubConfig
 
     internal void Apply(IServiceCollection services)
     {
-        _services_apply_func?.Invoke(services);
+        this._services_apply_func?.Invoke(services);
     }
 
     internal void Apply(SocketIOConfig socket_io_config)
     {
-        socket_io_config.Endpoints = Endpoints;
+        socket_io_config.Endpoints = this.Endpoints;
 
-        if (ConnectionRetryDelay.HasValue)
+        if (this.ConnectionRetryDelay.HasValue)
         {
-            socket_io_config.ConnectionRetryDelay = ConnectionRetryDelay.Value;
+            socket_io_config.ConnectionRetryDelay = this.ConnectionRetryDelay.Value;
         }
     }
 
     public void AddReceiver<TReceiver>(Func<IServiceProvider, TReceiver>? factory = null)
         where TReceiver : class, INowyMessageHubReceiver
     {
-        _services_apply_func += services =>
+        this._services_apply_func += services =>
         {
             if (factory is { })
             {
@@ -107,6 +114,6 @@ internal sealed class NowyMessageHubConfig : INowyMessageHubConfig
     {
         NowyMessageHubEndpointConfig config = new(url: url);
         endpoint_config_func?.Invoke(config);
-        Endpoints.Add(config);
+        this.Endpoints.Add(config);
     }
 }

@@ -1,4 +1,4 @@
-namespace Nowy.Database.Common.Services;
+namespace Nowy.MessageHub.Client.Services;
 
 internal sealed class SocketIOConfig
 {

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Nowy.Database.Contract.Services;
 using SocketIOClient;
 
-namespace Nowy.Database.Common.Services;
+namespace Nowy.MessageHub.Client.Services;
 
 internal sealed class SocketIOService : BackgroundService
 {
@@ -18,9 +18,9 @@ internal sealed class SocketIOService : BackgroundService
 
     public SocketIOService(ILogger<SocketIOService> logger, SocketIOConfig config, IEnumerable<INowyMessageHubReceiver> receivers)
     {
-        _logger = logger;
-        _config = config;
-        _receivers = receivers.ToList();
+        this._logger = logger;
+        this._config = config;
+        this._receivers = receivers.ToList();
 
         List<EndpointEntry> clients = new();
         foreach (NowyMessageHubEndpointConfig endpoint_config in config.Endpoints)
@@ -42,21 +42,21 @@ internal sealed class SocketIOService : BackgroundService
 
             // client.OnAny((a, b) => { _logger.LogInformation($"Received message from Socket IO: event_name={a}, b={JsonSerializer.Serialize(b)}"); });
 
-            foreach (INowyMessageHubReceiver message_hub_receiver in _receivers)
+            foreach (INowyMessageHubReceiver message_hub_receiver in this._receivers)
             {
-                client.On("v1:broadcast_event", response => _handleResponseAsync(response, message_hub_receiver).Forget());
+                client.On("v1:broadcast_event", response => this._handleResponseAsync(response, message_hub_receiver).Forget());
             }
 
             clients.Add(new EndpointEntry(client, endpoint_config));
         }
 
-        _clients = clients;
+        this._clients = clients;
     }
 
     private async Task _handleResponseAsync(SocketIOResponse response, INowyMessageHubReceiver receiver)
     {
         string event_name = response.GetValue<string>(0);
-        _logger.LogInformation("Received message from Socket IO: {event_name}", event_name);
+        this._logger.LogInformation("Received message from Socket IO: {event_name}", event_name);
 
         bool matches = false;
         foreach (string event_name_prefix in receiver.GetEventNamePrefixes())
@@ -82,7 +82,7 @@ internal sealed class SocketIOService : BackgroundService
             values_as_json.Add(value_as_json);
         }
 
-        _logger.LogInformation("Received message from Socket IO: {data}", values_as_json);
+        this._logger.LogInformation("Received message from Socket IO: {data}", values_as_json);
 
         _Payload payload = new(values_as_json, _json_options);
 
@@ -93,7 +93,7 @@ internal sealed class SocketIOService : BackgroundService
     {
         using CancellationTokenSource cts = new();
         cts.CancelAfter(delay);
-        await WaitUntilConnectedAsync(event_name, cts.Token);
+        await this.WaitUntilConnectedAsync(event_name, cts.Token);
     }
 
     public async Task WaitUntilConnectedAsync(string event_name, CancellationToken token)
@@ -154,7 +154,7 @@ internal sealed class SocketIOService : BackgroundService
             data.Add(o as string ?? JsonSerializer.Serialize(o, _json_options));
         }
 
-        _logger.LogInformation("Send message to Socket IO: {data}", data);
+        this._logger.LogInformation("Send message to Socket IO: {data}", data);
 
         await Task.WhenAll(this._clients.Select(async client_entry =>
         {
@@ -179,29 +179,29 @@ internal sealed class SocketIOService : BackgroundService
 
         public _Payload(List<string> values_as_json, JsonSerializerOptions json_options)
         {
-            _values_as_json = values_as_json;
-            _json_options = json_options;
+            this._values_as_json = values_as_json;
+            this._json_options = json_options;
         }
 
 
         public TValue? GetValue<TValue>() where TValue : class
         {
-            int index = _next_index;
-            TValue? value = GetValue<TValue>(index);
-            _next_index++;
+            int index = this._next_index;
+            TValue? value = this.GetValue<TValue>(index);
+            this._next_index++;
             return value;
         }
 
         public TValue? GetValue<TValue>(int index) where TValue : class
         {
-            string str = _values_as_json[index];
+            string str = this._values_as_json[index];
 
             if (typeof(TValue) == typeof(string))
             {
                 return str as TValue;
             }
 
-            return JsonSerializer.Deserialize<TValue>(str, _json_options);
+            return JsonSerializer.Deserialize<TValue>(str, this._json_options);
         }
     }
 
@@ -212,8 +212,8 @@ internal sealed class SocketIOService : BackgroundService
 
         public EndpointEntry(SocketIO client, NowyMessageHubEndpointConfig endpoint_config)
         {
-            Client = client;
-            EndpointConfig = endpoint_config;
+            this.Client = client;
+            this.EndpointConfig = endpoint_config;
         }
     }
 
@@ -234,23 +234,23 @@ internal sealed class SocketIOService : BackgroundService
                     {
                         try
                         {
-                            _logger.LogInformation("Connect to Socket IO: {url}", client_entry.EndpointConfig.Url);
+                            this._logger.LogInformation("Connect to Socket IO: {url}", client_entry.EndpointConfig.Url);
                             await client.ConnectAsync();
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, $"Connect to Socket IO: Error during {nameof(client.ConnectAsync)}");
+                            this._logger.LogError(ex, $"Connect to Socket IO: Error during {nameof(client.ConnectAsync)}");
 
-                            await Task.Delay(_config.ConnectionRetryDelay, stoppingToken);
+                            await Task.Delay(this._config.ConnectionRetryDelay, stoppingToken);
                         }
                     }
 
-                    await Task.Delay(_config.ConnectionRetryLoopDelay, stoppingToken);
+                    await Task.Delay(this._config.ConnectionRetryLoopDelay, stoppingToken);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Connect to Socket IO: Error during {nameof(ExecuteAsync)}");
+                this._logger.LogError(ex, $"Connect to Socket IO: Error during {nameof(this.ExecuteAsync)}");
             }
         }).ToArray());
     }

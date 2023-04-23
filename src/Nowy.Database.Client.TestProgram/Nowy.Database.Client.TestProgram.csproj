@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Nowy.Database.Client\Nowy.Database.Client.csproj" />
+    <ProjectReference Include="..\Nowy.MessageHub.Client\Nowy.MessageHub.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>

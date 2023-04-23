@@ -10,6 +10,7 @@ using Nowy.Database.Contract.Models;
 using Nowy.Database.Contract.Services;
 using Nowy.Database.Web.Endpoints;
 using Nowy.Database.Web.Services;
+using Nowy.MessageHub.Client;
 using Nowy.Standard;
 using Serilog;
 using Serilog.Events;
@@ -38,6 +39,12 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
 );
 builder.Services.AddSingleton<MongoRepository>();
 builder.Services.AddSingleton<INowyDatabase, MongoNowyDatabase>();
+
+builder.Services.AddNowyMessageHubClient(config =>
+{
+    config.AddEndpoint("https://main.messagehub.schulz.dev");
+    config.AddEndpoint("https://main.messagehub.nowykom.de");
+});
 
 builder.Services.AddSingleton<ApiEndpointsV1>();
 

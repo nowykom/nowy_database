@@ -4,6 +4,7 @@ using Nowy.Database.Common;
 using Nowy.Database.Common.Models;
 using Nowy.Database.Contract.Models;
 using Nowy.Database.Contract.Services;
+using Nowy.MessageHub.Client;
 using Serilog;
 using Xunit.Abstractions;
 

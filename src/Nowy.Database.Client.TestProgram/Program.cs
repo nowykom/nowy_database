@@ -6,6 +6,7 @@ using Nowy.Database.Client;
 using Nowy.Database.Client.TestProgram;
 using Nowy.Database.Common;
 using Nowy.Database.Contract.Services;
+using Nowy.MessageHub.Client;
 using Nowy.Standard;
 using Serilog;
 using Serilog.Core;

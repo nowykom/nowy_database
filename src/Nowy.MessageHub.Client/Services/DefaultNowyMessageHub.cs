@@ -1,8 +1,6 @@
-using System.Text.Json;
 using Nowy.Database.Contract.Services;
-using SocketIOClient;
 
-namespace Nowy.Database.Common.Services;
+namespace Nowy.MessageHub.Client.Services;
 
 internal class DefaultNowyMessageHub : INowyMessageHub
 {
@@ -10,21 +8,21 @@ internal class DefaultNowyMessageHub : INowyMessageHub
 
     public DefaultNowyMessageHub(SocketIOService socket_io_service)
     {
-        _socket_io_service = socket_io_service;
+        this._socket_io_service = socket_io_service;
     }
 
     public async Task BroadcastMessageAsync(string event_name, object[] values, NowyMessageOptions? options)
     {
-        await _socket_io_service.BroadcastMessageAsync(event_name, values, options);
+        await this._socket_io_service.BroadcastMessageAsync(event_name, values, options);
     }
 
     public async Task WaitUntilConnectedAsync(string event_name, CancellationToken token)
     {
-        await _socket_io_service.WaitUntilConnectedAsync(event_name, token);
+        await this._socket_io_service.WaitUntilConnectedAsync(event_name, token);
     }
 
     public async Task WaitUntilConnectedAsync(string event_name, TimeSpan delay)
     {
-        await _socket_io_service.WaitUntilConnectedAsync(event_name, delay);
+        await this._socket_io_service.WaitUntilConnectedAsync(event_name, delay);
     }
 }

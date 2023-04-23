@@ -1,15 +1,23 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Nowy.Database.Common.Models.Messages;
+using Nowy.Database.Contract.Services;
+using Nowy.MessageHub.Client.Services;
+using Nowy.Standard;
 
 namespace Nowy.Database.Web.Services;
 
 public class MongoRepository
 {
     private readonly IMongoClient _mongo_client;
+    private readonly INowyMessageHub _message_hub;
+    private readonly INowyMessageHubEventQueue _message_hub_event_queue;
 
-    public MongoRepository(IMongoClient mongo_client)
+    public MongoRepository(IMongoClient mongo_client, INowyMessageHub message_hub, INowyMessageHubEventQueue message_hub_event_queue)
     {
         _mongo_client = mongo_client;
+        _message_hub = message_hub;
+        _message_hub_event_queue = message_hub_event_queue;
     }
 
     private void _convertFromTransfer(BsonDocument input)
@@ -96,51 +104,15 @@ public class MongoRepository
         return document;
     }
 
-    public async Task<BsonDocument> CreateAsync(string database_name, string entity_name, BsonDocument input)
-    {
-        IMongoDatabase database = _mongo_client.GetDatabase(database_name) ?? throw new ArgumentNullException(nameof(database));
-        IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(entity_name) ?? throw new ArgumentNullException(nameof(collection));
-
-        if (!input.TryGetValue("id", out BsonValue v))
-        {
-            // input["id"] = StringHelper.MakeRandomUuid();
-            throw new ArgumentNullException("id");
-        }
-
-        string id = (string)input["id"];
-        input["_id"] = id;
-        input.Remove("id");
-
-        FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Or(
-            Builders<BsonDocument>.Filter.Eq("_id", id),
-            Builders<BsonDocument>.Filter.In("_ids", new[] { id, })
-        );
-
-        BsonDocument? document = await collection.Find(filter).FirstOrDefaultAsync();
-        if (document is not null)
-        {
-            await collection.UpdateOneAsync(filter, new BsonDocument
-            {
-                ["$set"] = input,
-            });
-        }
-        else
-        {
-            await collection.InsertOneAsync(input);
-        }
-
-        document = await collection.Find(filter).FirstOrDefaultAsync();
-
-        if (document is { })
-        {
-            _convertIntoTransfer(document);
-        }
-
-        return document;
-    }
-
     public async Task<BsonDocument> UpsertAsync(string database_name, string entity_name, string id, BsonDocument input)
     {
+        bool disable_events = false;
+        if (input.Contains("disable_events"))
+        {
+            disable_events = input["disable_events"].AsBoolean;
+            input.Remove("disable_events");
+        }
+
         IMongoDatabase database = _mongo_client.GetDatabase(database_name) ?? throw new ArgumentNullException(nameof(database));
         IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(entity_name) ?? throw new ArgumentNullException(nameof(collection));
 
@@ -166,6 +138,29 @@ public class MongoRepository
         }
 
         document = await collection.Find(filter).FirstOrDefaultAsync();
+
+        if (!disable_events)
+        {
+            this._message_hub_event_queue.QueueBroadcastMessage(
+                DatabaseEntityChangedMessage.GetName(database_name: database_name, entity_name: entity_name),
+                new DatabaseEntityChangedMessage()
+                {
+                    DatabaseName = database_name,
+                    EntityName = entity_name,
+                    Id = id,
+                },
+                new NowyMessageOptions() { ExceptSender = true, }
+            );
+            this._message_hub_event_queue.QueueBroadcastMessage(
+                DatabaseCollectionChangedMessage.GetName(database_name: database_name, entity_name: entity_name),
+                new DatabaseCollectionChangedMessage()
+                {
+                    DatabaseName = database_name,
+                    EntityName = entity_name,
+                },
+                new NowyMessageOptions() { ExceptSender = true, }
+            );
+        }
 
         if (document is { })
         {

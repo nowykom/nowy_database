@@ -1,6 +1,6 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Nowy.Database.Common.Models.Messages;
+using Nowy.Database.Contract.Models;
 using Nowy.Database.Contract.Services;
 using Nowy.MessageHub.Client.Services;
 using Nowy.Standard;
@@ -122,46 +122,54 @@ public class MongoRepository
             Builders<BsonDocument>.Filter.In("_ids", new[] { id, })
         );
 
-        DatabaseEntityChangedType entity_changed_type;
+
+        bool is_inserted = false;
+        bool is_updated = false;
 
         BsonDocument? document = await collection.Find(filter).FirstOrDefaultAsync();
         if (document is not null)
         {
-            entity_changed_type = DatabaseEntityChangedType.UPDATE;
             await collection.UpdateOneAsync(filter, new BsonDocument
             {
                 ["$set"] = input,
             });
+
+            is_updated = true;
         }
         else
         {
-            entity_changed_type = DatabaseEntityChangedType.INSERT;
             await collection.InsertOneAsync(input);
+
+            is_inserted = true;
         }
 
         document = await collection.Find(filter).FirstOrDefaultAsync();
 
         if (!disable_events)
         {
-            this._message_hub.QueueBroadcastMessage(
-                DatabaseEntityChangedMessage.GetName(type: entity_changed_type, database_name: database_name, entity_name: entity_name),
-                new DatabaseEntityChangedMessage()
+            if (is_inserted)
+            {
+                CollectionEvent collection_event = new CollectionModelsInsertedEvent { DatabaseName = database_name, EntityName = entity_name, };
+                CollectionModelEvent collection_model_event = new CollectionModelInsertedEvent { DatabaseName = database_name, EntityName = entity_name, Id = id, };
+
+                this._message_hub.QueueEvent(config =>
                 {
-                    DatabaseName = database_name,
-                    EntityName = entity_name,
-                    Id = id,
-                },
-                new NowyMessageOptions() { ExceptSender = true, }
-            );
-            this._message_hub.QueueBroadcastMessage(
-                DatabaseCollectionChangedMessage.GetName(type: entity_changed_type, database_name: database_name, entity_name: entity_name),
-                new DatabaseCollectionChangedMessage()
+                    config.AddValue(collection_event);
+                    config.AddValue(collection_model_event);
+                });
+            }
+
+            if (is_updated)
+            {
+                CollectionEvent collection_event = new CollectionModelsUpdatedEvent { DatabaseName = database_name, EntityName = entity_name, };
+                CollectionModelEvent collection_model_event = new CollectionModelUpdatedEvent { DatabaseName = database_name, EntityName = entity_name, Id = id, };
+
+                this._message_hub.QueueEvent(config =>
                 {
-                    DatabaseName = database_name,
-                    EntityName = entity_name,
-                },
-                new NowyMessageOptions() { ExceptSender = true, }
-            );
+                    config.AddValue(collection_event);
+                    config.AddValue(collection_model_event);
+                });
+            }
         }
 
         if (document is { })
@@ -182,36 +190,26 @@ public class MongoRepository
             Builders<BsonDocument>.Filter.In("_ids", new[] { id, })
         );
 
-        DatabaseEntityChangedType entity_changed_type = 0;
+        bool is_deleted = false;
 
         BsonDocument? document = await collection.Find(filter).FirstOrDefaultAsync();
         if (document is not null)
         {
-            entity_changed_type = DatabaseEntityChangedType.DELETE;
             await collection.DeleteOneAsync(filter);
+
+            is_deleted = true;
         }
 
-        if (entity_changed_type != 0)
+        if (is_deleted)
         {
-            this._message_hub.QueueBroadcastMessage(
-                DatabaseEntityChangedMessage.GetName(type: entity_changed_type, database_name: database_name, entity_name: entity_name),
-                new DatabaseEntityChangedMessage()
-                {
-                    DatabaseName = database_name,
-                    EntityName = entity_name,
-                    Id = id,
-                },
-                new NowyMessageOptions() { ExceptSender = true, }
-            );
-            this._message_hub.QueueBroadcastMessage(
-                DatabaseCollectionChangedMessage.GetName(type: entity_changed_type, database_name: database_name, entity_name: entity_name),
-                new DatabaseCollectionChangedMessage()
-                {
-                    DatabaseName = database_name,
-                    EntityName = entity_name,
-                },
-                new NowyMessageOptions() { ExceptSender = true, }
-            );
+            CollectionEvent collection_event = new CollectionModelsDeletedEvent { DatabaseName = database_name, EntityName = entity_name, };
+            CollectionModelEvent collection_model_event = new CollectionModelDeletedEvent { DatabaseName = database_name, EntityName = entity_name, Id = id, };
+
+            this._message_hub.QueueEvent(config =>
+            {
+                config.AddValue(collection_event);
+                config.AddValue(collection_model_event);
+            });
         }
 
         return document;

@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Nowy.Database.Common.Models.Messages;
 using Nowy.Database.Contract.Services;
 
 namespace Nowy.MessageHub.Client.Services;

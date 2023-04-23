@@ -17,7 +17,11 @@ public static class ServiceCollectionExtensions
         config.Apply(socket_io_config);
         services.AddSingleton<SocketIOConfig>(sp => socket_io_config);
 
-        services.AddSingleton<INowyMessageHub, DefaultNowyMessageHub>(sp => new DefaultNowyMessageHub(sp.GetRequiredService<SocketIOService>()));
+        services.AddSingleton<INowyMessageHub, DefaultNowyMessageHub>(sp => new DefaultNowyMessageHub(
+            sp.GetRequiredService<ILogger<DefaultNowyMessageHub>>(),
+            sp.GetRequiredService<DefaultNowyMessageHubInternal>(),
+            sp.GetRequiredService<DefaultNowyMessageHubEventQueue>()
+        ));
 
         services.AddSingleton<SocketIOService>(sp => new SocketIOService(
             sp.GetRequiredService<ILogger<SocketIOService>>(),
@@ -26,12 +30,20 @@ public static class ServiceCollectionExtensions
         ));
         services.AddHostedServiceByWrapper<SocketIOService>();
 
-        services.AddSingleton<INowyMessageHubEventQueue>(sp => sp.GetRequiredService<DefaultNowyMessageHubEventQueue>());
         services.AddSingleton<DefaultNowyMessageHubEventQueue>(sp => new DefaultNowyMessageHubEventQueue(
             sp.GetRequiredService<ILogger<DefaultNowyMessageHubEventQueue>>(),
-            sp.GetRequiredService<INowyMessageHub>()
+            sp.GetRequiredService<DefaultNowyMessageHubInternal>()
         ));
         services.AddHostedServiceByWrapper<DefaultNowyMessageHubEventQueue>();
+
+        services.AddSingleton<DefaultNowyMessageHubInternal>(sp => new DefaultNowyMessageHubInternal(
+            sp.GetRequiredService<SocketIOService>()
+        ));
+
+        services.AddSingleton<DefaultNowyMessageHubEventQueue>(sp => new DefaultNowyMessageHubEventQueue(
+            sp.GetRequiredService<ILogger<DefaultNowyMessageHubEventQueue>>(),
+            sp.GetRequiredService<DefaultNowyMessageHubInternal>()
+        ));
     }
 }
 

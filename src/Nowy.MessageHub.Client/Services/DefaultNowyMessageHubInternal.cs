@@ -25,4 +25,14 @@ internal class DefaultNowyMessageHubInternal
     {
         await this._socket_io_service.WaitUntilConnectedAsync(event_name, delay);
     }
+
+    public void AddEphemeralReceiver(INowyMessageHubReceiver receiver)
+    {
+        this._socket_io_service.AddEphemeralReceiver(receiver);
+    }
+
+    public void RemoveEphemeralReceiver(INowyMessageHubReceiver receiver)
+    {
+        this._socket_io_service.RemoveEphemeralReceiver(receiver);
+    }
 }

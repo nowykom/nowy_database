@@ -12,7 +12,7 @@ namespace Nowy.MessageHub.Client.Services;
 internal sealed class SocketIOService : BackgroundService
 {
     private static readonly JsonSerializerOptions _json_options = new JsonSerializerOptions() { PropertyNamingPolicy = null, };
-    private static readonly string RAW_EVENT_NAME_BROADCAST_MESSAGE = "v1:broadcast";
+    private static readonly string RAW_EVENT_NAME_BROADCAST_MESSAGE = "v1:broadcast_message";
 
     private readonly ILogger _logger;
     private readonly SocketIOConfig _config;

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Nowy.Database.Contract.Models;
 using Nowy.Database.Contract.Services;
 
@@ -5,14 +6,17 @@ namespace Nowy.MessageHub.Client.Services;
 
 internal class DefaultNowyMessageHub : INowyMessageHub
 {
+    private readonly ILogger _logger;
     private readonly DefaultNowyMessageHubInternal _message_hub_internal;
     private readonly DefaultNowyMessageHubEventQueue _message_hub_event_queue;
 
     public DefaultNowyMessageHub(
+        ILogger<DefaultNowyMessageHub> logger,
         DefaultNowyMessageHubInternal message_hub_internal,
         DefaultNowyMessageHubEventQueue message_hub_event_queue
     )
     {
+        this._logger = logger;
         this._message_hub_internal = message_hub_internal;
         this._message_hub_event_queue = message_hub_event_queue;
     }
@@ -42,12 +46,12 @@ internal class DefaultNowyMessageHub : INowyMessageHub
         DefaultNowyMessageHubEventEnvelopeBuilder builder = new();
         configure(builder);
 
-        string[] recipients = builder.Recipients.ToArray()
+        string[] recipients = builder.Recipients.ToArray();
 
         foreach (object value in builder.Values)
         {
             this._message_hub_event_queue.QueueBroadcastMessage(
-                value.GetType().Name,
+                _getEventNameOfEventType(value.GetType()),
                 value,
                 new NowyMessageOptions
                 {
@@ -60,9 +64,17 @@ internal class DefaultNowyMessageHub : INowyMessageHub
 
     public INowyMessageHubEventSubscription SubscribeEvent<TEvent>(Action<INowyMessageHubEventSubscriptionBuilder<TEvent>> configure) where TEvent : class
     {
-        INowyMessageHubEventSubscriptionBuilder<TEvent> builder = new DefaultNowyMessageHubEventSubscriptionBuilder<TEvent>();
+        string event_name = _getEventNameOfEventType(typeof(TEvent));
+
+        DefaultNowyMessageHubEventSubscriptionBuilder<TEvent> builder = new(this._logger, this._message_hub_internal, event_name);
         configure(builder);
 
+        DefaultNowyMessageHubEventSubscription<TEvent> receiver = builder.Build();
+        return receiver;
+    }
 
+    private string _getEventNameOfEventType(Type event_type)
+    {
+        return event_type.Name;
     }
 }

@@ -87,8 +87,6 @@ internal class DefaultNowyMessageHubEventQueue : BackgroundService, INowyMessage
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
-                    //task is cancelled, return or do something else
-                    return;
                 }
             }
         });

@@ -249,6 +249,9 @@ internal sealed class SocketIOService : BackgroundService
                     await Task.Delay(this._config.ConnectionRetryLoopDelay, stoppingToken);
                 }
             }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+            }
             catch (Exception ex)
             {
                 this._logger.LogError(ex, $"Connect to Socket IO: Error during {nameof(this.ExecuteAsync)}");

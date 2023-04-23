@@ -24,7 +24,7 @@ public class UnitTest1
 
         services.AddHttpClient();
 
-        services.AddNowyDatabaseClient("https://main.database.nowykom.de");
+        services.AddNowyDatabaseClient("https://main.database.schulz.dev");
         services.AddNowyMessageHubClient(config => { config.AddEndpoint("https://main.messagehub.schulz.dev"); });
 
         this._sp = services.BuildServiceProvider();

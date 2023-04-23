@@ -30,6 +30,9 @@ internal sealed class MongoNowyCollection<TModel> : INowyCollection<TModel> wher
         _entity_name = entity_name;
     }
 
+    string INowyCollection<TModel>.DatabaseName => this._database_name;
+    string INowyCollection<TModel>.EntityName => this._entity_name;
+
     public async Task<IReadOnlyList<TModel>> GetAllAsync()
     {
         List<BsonDocument> list = await _repo.GetAllAsync(database_name: _database_name, entity_name: _entity_name);
@@ -84,5 +87,10 @@ internal sealed class MongoNowyCollection<TModel> : INowyCollection<TModel> wher
     public async Task DeleteAsync(string id)
     {
         BsonDocument? document = await _repo.DeleteAsync(database_name: _database_name, entity_name: _entity_name, id: id);
+    }
+
+    public INowyCollectionEventSubscription<TModel> Subscribe()
+    {
+        return new NullNowyCollectionEventSubscription<TModel>();
     }
 }

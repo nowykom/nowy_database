@@ -10,6 +10,7 @@ internal sealed class RestNowyDatabase : INowyDatabase
     private readonly INowyDatabaseAuthService? _database_auth_service;
     private readonly INowyDatabaseCacheService? _database_cache_service;
     private readonly IModelService _model_service;
+    private readonly IDatabaseEventService _event_service;
     private readonly string _endpoint;
 
     public RestNowyDatabase(
@@ -17,6 +18,7 @@ internal sealed class RestNowyDatabase : INowyDatabase
         INowyDatabaseAuthService? database_auth_service,
         INowyDatabaseCacheService? database_cache_service,
         IModelService model_service,
+        IDatabaseEventService event_service,
         string endpoint
     )
     {
@@ -24,6 +26,7 @@ internal sealed class RestNowyDatabase : INowyDatabase
         _database_auth_service = database_auth_service;
         _database_cache_service = database_cache_service;
         _model_service = model_service;
+        _event_service = event_service;
         _endpoint = endpoint;
     }
 
@@ -42,6 +45,7 @@ internal sealed class RestNowyDatabase : INowyDatabase
                 _http_client,
                 _database_cache_service,
                 _model_service,
+                _event_service,
                 _endpoint,
                 database_name: database_name,
                 entity_name: entity_name
@@ -52,6 +56,7 @@ internal sealed class RestNowyDatabase : INowyDatabase
             _http_client,
             _database_auth_service,
             _model_service,
+            _event_service,
             _endpoint,
             database_name: database_name,
             entity_name: entity_name

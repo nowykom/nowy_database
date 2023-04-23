@@ -12,6 +12,7 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
     private readonly HttpClient _http_client;
     private readonly INowyDatabaseAuthService? _database_auth_service;
     private readonly IModelService _model_service;
+    private readonly IDatabaseEventService _event_service;
     private readonly string _endpoint;
     private readonly string _database_name;
     private readonly string _entity_name;
@@ -22,6 +23,7 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
         HttpClient http_client,
         INowyDatabaseAuthService? database_auth_service,
         IModelService model_service,
+        IDatabaseEventService event_service,
         string endpoint,
         string database_name,
         string entity_name
@@ -30,10 +32,14 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
         _http_client = http_client;
         _database_auth_service = database_auth_service;
         _model_service = model_service;
+        _event_service = event_service;
         _endpoint = endpoint;
         _database_name = database_name;
         _entity_name = entity_name;
     }
+
+    string INowyCollection<TModel>.DatabaseName => this._database_name;
+    string INowyCollection<TModel>.EntityName => this._entity_name;
 
     private void _configureAuth(HttpRequestMessage request)
     {
@@ -112,5 +118,10 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
 
         using HttpResponseMessage response = await _http_client.SendAsync(request);
         string result = await response.Content.ReadAsStringAsync();
+    }
+
+    public INowyCollectionEventSubscription<TModel> Subscribe()
+    {
+        return new DefaultNowyCollectionEventSubscription<TModel>(this, _event_service);
     }
 }

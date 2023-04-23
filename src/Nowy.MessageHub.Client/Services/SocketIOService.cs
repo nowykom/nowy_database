@@ -61,7 +61,7 @@ internal sealed class SocketIOService : BackgroundService
         bool matches = false;
         foreach (string event_name_prefix in receiver.GetEventNamePrefixes())
         {
-            if (event_name.StartsWith(event_name_prefix))
+            if (event_name.StartsWith(event_name_prefix, StringComparison.Ordinal))
             {
                 matches = true;
                 break;
@@ -183,6 +183,7 @@ internal sealed class SocketIOService : BackgroundService
             this._json_options = json_options;
         }
 
+        public int Count => this._values_as_json.Count;
 
         public TValue? GetValue<TValue>() where TValue : class
         {

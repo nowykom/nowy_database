@@ -14,7 +14,8 @@ public static class ServiceCollectionExtensions
 {
     public static void AddNowyDatabaseClient(this IServiceCollection services, string endpoint)
     {
-        services.AddSingleton<IModelService, ModelService>(sp => new ModelService());
+        services.AddSingleton<IModelService, DefaultModelService>(sp => new DefaultModelService());
+        services.AddSingleton<IDatabaseEventService, DefaultDatabaseEventService>(sp => new DefaultDatabaseEventService());
 
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER")))
         {
@@ -30,7 +31,15 @@ public static class ServiceCollectionExtensions
             sp.GetService<INowyDatabaseAuthService>(),
             sp.GetService<INowyDatabaseCacheService>(),
             sp.GetRequiredService<IModelService>(),
+            sp.GetRequiredService<IDatabaseEventService>(),
             endpoint
         ));
+
+
+        services.AddSingleton<DatabaseEventReceiver>(sp => new DatabaseEventReceiver(
+            sp.GetRequiredService<ILogger<DatabaseEventReceiver>>(),
+            sp.GetRequiredService<IDatabaseEventService>()
+        ));
+        services.AddSingleton<INowyMessageHubReceiver>(sp => sp.GetRequiredService<DatabaseEventReceiver>());
     }
 }

@@ -11,13 +11,11 @@ public class MongoRepository
 {
     private readonly IMongoClient _mongo_client;
     private readonly INowyMessageHub _message_hub;
-    private readonly INowyMessageHubEventQueue _message_hub_event_queue;
 
-    public MongoRepository(IMongoClient mongo_client, INowyMessageHub message_hub, INowyMessageHubEventQueue message_hub_event_queue)
+    public MongoRepository(IMongoClient mongo_client, INowyMessageHub message_hub)
     {
         _mongo_client = mongo_client;
         _message_hub = message_hub;
-        _message_hub_event_queue = message_hub_event_queue;
     }
 
     private void _convertFromTransfer(BsonDocument input)
@@ -145,7 +143,7 @@ public class MongoRepository
 
         if (!disable_events)
         {
-            this._message_hub_event_queue.QueueBroadcastMessage(
+            this._message_hub.QueueBroadcastMessage(
                 DatabaseEntityChangedMessage.GetName(type: entity_changed_type, database_name: database_name, entity_name: entity_name),
                 new DatabaseEntityChangedMessage()
                 {
@@ -155,7 +153,7 @@ public class MongoRepository
                 },
                 new NowyMessageOptions() { ExceptSender = true, }
             );
-            this._message_hub_event_queue.QueueBroadcastMessage(
+            this._message_hub.QueueBroadcastMessage(
                 DatabaseCollectionChangedMessage.GetName(type: entity_changed_type, database_name: database_name, entity_name: entity_name),
                 new DatabaseCollectionChangedMessage()
                 {
@@ -195,7 +193,7 @@ public class MongoRepository
 
         if (entity_changed_type != 0)
         {
-            this._message_hub_event_queue.QueueBroadcastMessage(
+            this._message_hub.QueueBroadcastMessage(
                 DatabaseEntityChangedMessage.GetName(type: entity_changed_type, database_name: database_name, entity_name: entity_name),
                 new DatabaseEntityChangedMessage()
                 {
@@ -205,7 +203,7 @@ public class MongoRepository
                 },
                 new NowyMessageOptions() { ExceptSender = true, }
             );
-            this._message_hub_event_queue.QueueBroadcastMessage(
+            this._message_hub.QueueBroadcastMessage(
                 DatabaseCollectionChangedMessage.GetName(type: entity_changed_type, database_name: database_name, entity_name: entity_name),
                 new DatabaseCollectionChangedMessage()
                 {

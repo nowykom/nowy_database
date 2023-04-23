@@ -6,11 +6,15 @@ namespace Nowy.Database.Client.Services;
 public class DefaultNowyCollectionEventSubscription<TModel> : INowyCollectionEventSubscription<TModel> where TModel : class, IBaseModel
 {
     private INowyCollection<TModel>? _collection;
+    private IDatabaseEventService? _event_service;
     private List<Func<Task>>? _handlers;
 
     public DefaultNowyCollectionEventSubscription(INowyCollection<TModel> collection, IDatabaseEventService event_service)
     {
         this._collection = collection;
+        this._event_service = event_service;
+
+        event_service.SendCollectionModelDeleted();
     }
 
     public INowyCollectionEventSubscription<TModel> AddHandler(Action handler)
@@ -44,5 +48,8 @@ public class DefaultNowyCollectionEventSubscription<TModel> : INowyCollectionEve
     public void Dispose()
     {
         this._collection = null;
+        this._event_service = null;
+        this._handlers?.Clear();
+        this._handlers = null;
     }
 }

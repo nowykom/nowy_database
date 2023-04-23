@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Nowy.Database.Contract.Models;
 using Nowy.Database.Contract.Services;
 
@@ -9,10 +10,11 @@ namespace Nowy.Database.Client.Services;
 
 internal sealed class CachedNowyCollection<TModel> : INowyCollection<TModel> where TModel : class, IBaseModel
 {
+    private readonly ILogger _logger;
     private readonly HttpClient _http_client;
     private readonly INowyDatabaseCacheService _cache_service;
     private readonly IModelService _model_service;
-    private readonly IDatabaseEventService _event_service;
+    private readonly INowyMessageHub _message_hub;
     private readonly string _endpoint;
     private readonly string _database_name;
     private readonly string _entity_name;
@@ -20,19 +22,21 @@ internal sealed class CachedNowyCollection<TModel> : INowyCollection<TModel> whe
     private static readonly JsonSerializerOptions _json_options = new JsonSerializerOptions() { PropertyNamingPolicy = null, };
 
     public CachedNowyCollection(
+        ILogger logger,
         HttpClient http_client,
         INowyDatabaseCacheService cache_service,
         IModelService model_service,
-        IDatabaseEventService event_service,
+        INowyMessageHub message_hub,
         string endpoint,
         string database_name,
         string entity_name
     )
     {
+        _logger = logger;
         _http_client = http_client;
         _cache_service = cache_service;
         _model_service = model_service;
-        _event_service = event_service;
+        _message_hub = message_hub;
         _endpoint = endpoint;
         _database_name = database_name;
         _entity_name = entity_name;
@@ -79,6 +83,6 @@ internal sealed class CachedNowyCollection<TModel> : INowyCollection<TModel> whe
 
     public INowyCollectionEventSubscription<TModel> Subscribe()
     {
-        return new DefaultNowyCollectionEventSubscription<TModel>(this, _event_service);
+        return new DefaultNowyCollectionEventSubscription<TModel>(this, _logger, _message_hub);
     }
 }

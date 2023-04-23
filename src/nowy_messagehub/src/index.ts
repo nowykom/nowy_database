@@ -37,7 +37,7 @@ const io = new socket_io.Server<
 >(httpServer, { /* options */});
 
 io.on("connection", (socket) => {
-  socket.on("v1:broadcast_event", function (...values) {
+  socket.on("v1:broadcast_message", function (...values) {
     const event_name = values[0];
     const options = values[1];
     const count_values = values[2];
@@ -46,9 +46,9 @@ io.on("connection", (socket) => {
     console.log(`values: ${JSON.stringify(values)}`);
 
     if (options['except_sender']) {
-      socket.broadcast.emit(`v1:broadcast_event`, ...values);
+      socket.broadcast.emit(`v1:broadcast_message`, ...values);
     } else {
-      io.sockets.emit(`v1:broadcast_event`, ...values);
+      io.sockets.emit(`v1:broadcast_message`, ...values);
     }
   });
 });

@@ -1,3 +1,5 @@
 namespace Nowy.Database.Contract.Services;
 
-public readonly record struct NowyMessageOptions(bool ExceptSender);
+public readonly record struct NowyMessageOptions(bool ExceptSender, string[] Recipients)
+{
+}

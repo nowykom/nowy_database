@@ -10,5 +10,6 @@ public interface INowyMessageHub
 
     void QueueBroadcastMessage(string event_name, object event_value, NowyMessageOptions message_options);
 
-    Task SendEventAsync(Action<INowyMessageHubEventBuilder> configure);
+    void QueueEvent(Action<INowyMessageHubEventEnvelopeBuilder> configure);
+    INowyMessageHubEventSubscription SubscribeEvent<TEvent>(Action<INowyMessageHubEventSubscriptionBuilder<TEvent>> configure) where TEvent : class;
 }

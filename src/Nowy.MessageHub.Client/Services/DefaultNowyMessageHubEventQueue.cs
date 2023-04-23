@@ -10,18 +10,18 @@ public readonly record struct EventQueueKey(string Name, NowyMessageOptions Mess
 
 public readonly record struct EventQueueEntry(object Value);
 
-internal class DefaultNowyMessageHubEventQueue : BackgroundService, INowyMessageHubEventQueue
+internal class DefaultNowyMessageHubEventQueue : BackgroundService
 {
     private readonly ILogger<DefaultNowyMessageHubEventQueue> _logger;
-    private readonly INowyMessageHub _message_hub;
+    private readonly DefaultNowyMessageHubInternal _message_hub_internal;
     private readonly object _lock_entries = new();
     private Dictionary<EventQueueKey, HashSet<EventQueueEntry>> _entries = new();
     private Stopwatch? _entries_were_added_at;
 
-    public DefaultNowyMessageHubEventQueue(ILogger<DefaultNowyMessageHubEventQueue> logger, INowyMessageHub message_hub)
+    public DefaultNowyMessageHubEventQueue(ILogger<DefaultNowyMessageHubEventQueue> logger, DefaultNowyMessageHubInternal message_hub_internal)
     {
         _logger = logger;
-        _message_hub = message_hub;
+        _message_hub_internal = message_hub_internal;
     }
 
     public void QueueBroadcastMessage(string event_name, object event_value, NowyMessageOptions message_options)
@@ -72,7 +72,7 @@ internal class DefaultNowyMessageHubEventQueue : BackgroundService, INowyMessage
 
                             foreach (( EventQueueKey key, HashSet<EventQueueEntry> entries_with_key ) in entries_copied)
                             {
-                                await this._message_hub.BroadcastMessageAsync(
+                                await this._message_hub_internal.BroadcastMessageAsync(
                                     event_name: key.Name,
                                     values: entries_with_key.Select(o => o.Value).ToArray(),
                                     options: key.MessageOptions

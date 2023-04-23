@@ -1,3 +1,5 @@
+using System.Collections.Immutable;
+using System.Reflection.Metadata;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Hosting;
@@ -10,17 +12,20 @@ namespace Nowy.MessageHub.Client.Services;
 internal sealed class SocketIOService : BackgroundService
 {
     private static readonly JsonSerializerOptions _json_options = new JsonSerializerOptions() { PropertyNamingPolicy = null, };
+    private static readonly string RAW_EVENT_NAME_BROADCAST_MESSAGE = "v1:broadcast";
 
     private readonly ILogger _logger;
     private readonly SocketIOConfig _config;
-    private readonly List<INowyMessageHubReceiver> _receivers;
+    private readonly List<INowyMessageHubReceiver> _receivers_from_di;
+    private ImmutableList<INowyMessageHubReceiver> _receivers_ephemeral;
     private readonly List<EndpointEntry> _clients;
 
     public SocketIOService(ILogger<SocketIOService> logger, SocketIOConfig config, IEnumerable<INowyMessageHubReceiver> receivers)
     {
         this._logger = logger;
         this._config = config;
-        this._receivers = receivers.ToList();
+        this._receivers_from_di = receivers.ToList();
+        this._receivers_ephemeral = ImmutableList<INowyMessageHubReceiver>.Empty;
 
         List<EndpointEntry> clients = new();
         foreach (NowyMessageHubEndpointConfig endpoint_config in config.Endpoints)
@@ -42,10 +47,7 @@ internal sealed class SocketIOService : BackgroundService
 
             // client.OnAny((a, b) => { _logger.LogInformation($"Received message from Socket IO: event_name={a}, b={JsonSerializer.Serialize(b)}"); });
 
-            foreach (INowyMessageHubReceiver message_hub_receiver in this._receivers)
-            {
-                client.On("v1:broadcast_event", response => this._handleResponseAsync(response, message_hub_receiver).Forget());
-            }
+            client.On(RAW_EVENT_NAME_BROADCAST_MESSAGE, this._handleBroadcastResponseAsync);
 
             clients.Add(new EndpointEntry(client, endpoint_config));
         }
@@ -53,40 +55,63 @@ internal sealed class SocketIOService : BackgroundService
         this._clients = clients;
     }
 
-    private async Task _handleResponseAsync(SocketIOResponse response, INowyMessageHubReceiver receiver)
+    public void AddEphemeralReceiver(INowyMessageHubReceiver receiver)
+    {
+        this._receivers_ephemeral = this._receivers_ephemeral.Add(receiver);
+    }
+
+    public void RemoveEphemeralReceiver(INowyMessageHubReceiver receiver)
+    {
+        this._receivers_ephemeral = this._receivers_ephemeral.RemoveAll(r => r == receiver);
+    }
+
+    private async void _handleBroadcastResponseAsync(SocketIOResponse response)
     {
         string event_name = response.GetValue<string>(0);
         this._logger.LogInformation("Received message from Socket IO: {event_name}", event_name);
 
-        bool matches = false;
-        foreach (string event_name_prefix in receiver.GetEventNamePrefixes())
+        async ValueTask handle_async(INowyMessageHubReceiver receiver)
         {
-            if (event_name.StartsWith(event_name_prefix, StringComparison.Ordinal))
+            bool matches = false;
+            foreach (string event_name_prefix in receiver.GetEventNamePrefixes())
             {
-                matches = true;
-                break;
+                if (event_name.StartsWith(event_name_prefix, StringComparison.Ordinal))
+                {
+                    matches = true;
+                    break;
+                }
             }
+
+            if (!matches)
+                return;
+
+            MessageOptions message_options = response.GetValue<MessageOptions>(1);
+
+            int values_count = response.GetValue<int>(2);
+            List<string> values_as_json = new();
+
+            for (int i = 0; i < values_count; i++)
+            {
+                string value_as_json = response.GetValue<string>(3 + i);
+                values_as_json.Add(value_as_json);
+            }
+
+            this._logger.LogInformation("Received message from Socket IO: {data}", values_as_json);
+
+            _Payload payload = new(values_as_json, _json_options);
+
+            await receiver.ReceiveMessageAsync(event_name, payload);
         }
 
-        if (!matches)
-            return;
-
-        MessageOptions message_options = response.GetValue<MessageOptions>(1);
-
-        int values_count = response.GetValue<int>(2);
-        List<string> values_as_json = new();
-
-        for (int i = 0; i < values_count; i++)
+        foreach (INowyMessageHubReceiver receiver in this._receivers_from_di)
         {
-            string value_as_json = response.GetValue<string>(3 + i);
-            values_as_json.Add(value_as_json);
+            await handle_async(receiver);
         }
 
-        this._logger.LogInformation("Received message from Socket IO: {data}", values_as_json);
-
-        _Payload payload = new(values_as_json, _json_options);
-
-        await receiver.ReceiveMessageAsync(event_name, payload);
+        foreach (INowyMessageHubReceiver receiver in this._receivers_ephemeral)
+        {
+            await handle_async(receiver);
+        }
     }
 
     public async Task WaitUntilConnectedAsync(string event_name, TimeSpan delay)
@@ -165,7 +190,7 @@ internal sealed class SocketIOService : BackgroundService
                 if (!client.Connected)
                     throw new InvalidOperationException($"Endpoint '{client_entry.EndpointConfig.Url}' is not connected.");
 
-                await client.EmitAsync(eventName: "v1:broadcast_event", data: data.ToArray());
+                await client.EmitAsync(eventName: RAW_EVENT_NAME_BROADCAST_MESSAGE, data: data.ToArray());
             }
         }));
     }

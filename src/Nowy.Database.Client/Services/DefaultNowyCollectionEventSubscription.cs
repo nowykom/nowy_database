@@ -1,55 +1,95 @@
-﻿using Nowy.Database.Contract.Models;
+﻿using System.Collections.Immutable;
+using Microsoft.Extensions.Logging;
+using Nowy.Database.Contract.Models;
 using Nowy.Database.Contract.Services;
 
 namespace Nowy.Database.Client.Services;
 
 public class DefaultNowyCollectionEventSubscription<TModel> : INowyCollectionEventSubscription<TModel> where TModel : class, IBaseModel
 {
+    private readonly string _database_name;
+    private readonly string _entity_name;
+
     private INowyCollection<TModel>? _collection;
-    private IDatabaseEventService? _event_service;
-    private List<Func<Task>>? _handlers;
+    private ILogger? _logger;
+    private INowyMessageHub? _message_hub;
+    private ImmutableArray<(Type event_type, Func<ValueTask> action)> _handlers = ImmutableArray<(Type event_type, Func<ValueTask> action)>.Empty;
 
-    public DefaultNowyCollectionEventSubscription(INowyCollection<TModel> collection, IDatabaseEventService event_service)
+    public DefaultNowyCollectionEventSubscription(INowyCollection<TModel> collection, ILogger logger, INowyMessageHub message_hub)
     {
-        this._collection = collection;
-        this._event_service = event_service;
+        this._database_name = collection.DatabaseName;
+        this._entity_name = collection.EntityName;
 
-        event_service.SendCollectionModelDeleted();
+        this._collection = collection;
+        this._logger = logger;
+        this._message_hub = message_hub;
     }
 
-    public INowyCollectionEventSubscription<TModel> AddHandler(Action handler)
+    private void _ensureSubscription<TEvent>() where TEvent : CollectionEvent
     {
-        this._handlers ??= new();
-        this._handlers.Add(() =>
+        if (this._message_hub is null) throw new ArgumentNullException(nameof(this._message_hub));
+
+        _message_hub.SubscribeEvent<TEvent>(config =>
+        {
+            config.Where(e => e.DatabaseName == this._database_name && e.EntityName == this._entity_name);
+            config.AddHandler(_handleReceivedEvent);
+        });
+    }
+
+    private async ValueTask _handleReceivedEvent(CollectionEvent value)
+    {
+        Type event_type = value.GetType();
+        foreach (( Type event_type, Func<ValueTask> action ) handler in this._handlers)
+        {
+            if (event_type == handler.event_type)
+            {
+                try
+                {
+                    await handler.action();
+                }
+                catch (Exception ex)
+                {
+                    this._logger?.LogError(ex, "Error during database collection event handler: {event}", value);
+                }
+            }
+        }
+    }
+
+    public INowyCollectionEventSubscription<TModel> AddHandler<TEvent>(Action handler) where TEvent : CollectionEvent
+    {
+        _ensureSubscription<TEvent>();
+        this._handlers = this._handlers.Add(( typeof(TEvent), () =>
         {
             handler();
-            return Task.CompletedTask;
-        });
+            return ValueTask.CompletedTask;
+        } ));
         return this;
     }
 
-    INowyCollectionEventSubscription INowyCollectionEventSubscription.AddHandler(Action handler)
+    INowyCollectionEventSubscription INowyCollectionEventSubscription.AddHandler<TEvent>(Action handler)
     {
-        return this.AddHandler(handler);
+        return this.AddHandler<TEvent>(handler);
     }
 
-    public INowyCollectionEventSubscription<TModel> AddHandler(Func<Task> handler)
+    public INowyCollectionEventSubscription<TModel> AddHandler<TEvent>(Func<ValueTask> handler) where TEvent : CollectionEvent
     {
-        this._handlers ??= new();
-        this._handlers.Add(handler);
+        _ensureSubscription<TEvent>();
+        this._handlers = this._handlers.Add(( typeof(TEvent), handler ));
         return this;
     }
 
-    INowyCollectionEventSubscription INowyCollectionEventSubscription.AddHandler(Func<Task> handler)
+    INowyCollectionEventSubscription INowyCollectionEventSubscription.AddHandler<TEvent>(Func<ValueTask> handler)
     {
-        return this.AddHandler(handler);
+        return this.AddHandler<TEvent>(handler);
     }
 
     public void Dispose()
     {
         this._collection = null;
-        this._event_service = null;
-        this._handlers?.Clear();
-        this._handlers = null;
+        this._message_hub = null;
+        if (!this._handlers.IsDefaultOrEmpty)
+        {
+            this._handlers = this._handlers.Clear();
+        }
     }
 }

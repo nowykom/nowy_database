@@ -1,4 +1,6 @@
-namespace Nowy.Database.Contract.Services;
+using Nowy.Database.Contract.Services;
+
+namespace Nowy.Database.Contract.Models;
 
 public interface IMessageHubPeer
 {

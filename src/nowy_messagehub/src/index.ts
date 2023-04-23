@@ -4,11 +4,11 @@ import * as socket_io from "socket.io";
 const port = parseInt(String(process.argv[2] || 5000));
 
 interface ServerToClientEvents {
-  'v1:broadcast_event': (...data: any[]) => void;
+  'v1:broadcast_message': (...data: any[]) => void;
 }
 
 interface ClientToServerEvents {
-  'v1:broadcast_event': (...data: any[]) => void;
+  'v1:broadcast_message': (...data: any[]) => void;
 }
 
 interface InterServerEvents {

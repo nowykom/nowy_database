@@ -116,7 +116,7 @@ class Build : NukeBuild
         {
             DotNetTasks.DotNetRestore(s => s
                 .SetProjectFile(Solution));
-                
+
             _cleanOutdatedPackages();
 
             DotNetTasks.DotNetRestore(s => s
@@ -184,6 +184,7 @@ class Build : NukeBuild
                 "Nowy.Database.Client",
                 "Nowy.Database.Contract",
                 "Nowy.Database.Common",
+                "Nowy.MessageHub.Client",
             };
 
             foreach (string project in projects)

@@ -124,9 +124,12 @@ public class MongoRepository
             Builders<BsonDocument>.Filter.In("_ids", new[] { id, })
         );
 
+        DatabaseEntityChangedType entity_changed_type;
+
         BsonDocument? document = await collection.Find(filter).FirstOrDefaultAsync();
         if (document is not null)
         {
+            entity_changed_type = DatabaseEntityChangedType.UPDATE;
             await collection.UpdateOneAsync(filter, new BsonDocument
             {
                 ["$set"] = input,
@@ -134,6 +137,7 @@ public class MongoRepository
         }
         else
         {
+            entity_changed_type = DatabaseEntityChangedType.INSERT;
             await collection.InsertOneAsync(input);
         }
 
@@ -142,7 +146,7 @@ public class MongoRepository
         if (!disable_events)
         {
             this._message_hub_event_queue.QueueBroadcastMessage(
-                DatabaseEntityChangedMessage.GetName(database_name: database_name, entity_name: entity_name),
+                DatabaseEntityChangedMessage.GetName(type: entity_changed_type, database_name: database_name, entity_name: entity_name),
                 new DatabaseEntityChangedMessage()
                 {
                     DatabaseName = database_name,
@@ -152,7 +156,7 @@ public class MongoRepository
                 new NowyMessageOptions() { ExceptSender = true, }
             );
             this._message_hub_event_queue.QueueBroadcastMessage(
-                DatabaseCollectionChangedMessage.GetName(database_name: database_name, entity_name: entity_name),
+                DatabaseCollectionChangedMessage.GetName(type: entity_changed_type, database_name: database_name, entity_name: entity_name),
                 new DatabaseCollectionChangedMessage()
                 {
                     DatabaseName = database_name,
@@ -180,10 +184,36 @@ public class MongoRepository
             Builders<BsonDocument>.Filter.In("_ids", new[] { id, })
         );
 
+        DatabaseEntityChangedType entity_changed_type = 0;
+
         BsonDocument? document = await collection.Find(filter).FirstOrDefaultAsync();
         if (document is not null)
         {
+            entity_changed_type = DatabaseEntityChangedType.DELETE;
             await collection.DeleteOneAsync(filter);
+        }
+
+        if (entity_changed_type != 0)
+        {
+            this._message_hub_event_queue.QueueBroadcastMessage(
+                DatabaseEntityChangedMessage.GetName(type: entity_changed_type, database_name: database_name, entity_name: entity_name),
+                new DatabaseEntityChangedMessage()
+                {
+                    DatabaseName = database_name,
+                    EntityName = entity_name,
+                    Id = id,
+                },
+                new NowyMessageOptions() { ExceptSender = true, }
+            );
+            this._message_hub_event_queue.QueueBroadcastMessage(
+                DatabaseCollectionChangedMessage.GetName(type: entity_changed_type, database_name: database_name, entity_name: entity_name),
+                new DatabaseCollectionChangedMessage()
+                {
+                    DatabaseName = database_name,
+                    EntityName = entity_name,
+                },
+                new NowyMessageOptions() { ExceptSender = true, }
+            );
         }
 
         return document;

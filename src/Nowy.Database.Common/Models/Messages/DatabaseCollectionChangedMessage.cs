@@ -2,12 +2,12 @@ namespace Nowy.Database.Common.Models.Messages;
 
 public class DatabaseCollectionChangedMessage : IEquatable<DatabaseCollectionChangedMessage>
 {
-    public static string GetName(string? database_name = null, string? entity_name = null)
+    public static string GetName(DatabaseEntityChangedType type = 0, string? database_name = null, string? entity_name = null)
     {
         if (database_name is not null && entity_name is not null)
-            return $"database:collection_changed:{database_name}:{entity_name}";
+            return $"database:collection_changed:{(int)type}:{database_name}:{entity_name}";
         if (database_name is not null)
-            return $"database:collection_changed:{database_name}";
+            return $"database:collection_changed:{(int)type}:{database_name}";
         return "database:collection_changed";
     }
 

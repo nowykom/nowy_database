@@ -22,6 +22,8 @@ public abstract class BaseModel : IBaseModel
 
     [JsonPropertyName("id")] public string id { get; set; } = string.Empty;
 
+    [JsonPropertyName("is_deleted")] public bool is_deleted { get; set; }
+
     [JsonPropertyName("ids")] public IReadOnlyList<string> ids { get; set; } = Array.Empty<string>();
 
     [JsonPropertyName("meta")] public Dictionary<string, string?>? meta { get; set; }

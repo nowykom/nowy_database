@@ -65,8 +65,14 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
         }
     }
 
-    public async Task<IReadOnlyList<TModel>> GetAllAsync()
+    public async Task<IReadOnlyList<TModel>> GetAllAsync(QueryOptions? options = null)
     {
+        if (options is { with_deleted: false })
+        {
+            ModelFilter filter = ModelFilterBuilder.Equals(nameof(IBaseModel.is_deleted), false).Build();
+            return await GetByFilterAsync(filter, new QueryOptions(with_deleted: true));
+        }
+
         string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}";
         using HttpRequestMessage request = new(HttpMethod.Get, url);
         _configureAuth(request);
@@ -77,8 +83,20 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
         return result;
     }
 
-    public async Task<IReadOnlyList<TModel>> GetByFilterAsync(ModelFilter filter)
+    public async Task<IReadOnlyList<TModel>> GetByFilterAsync(ModelFilter filter, QueryOptions? options = null)
     {
+        if (options is { with_deleted: false })
+        {
+            filter = new()
+            {
+                FiltersAnd = new()
+                {
+                    filter,
+                    ModelFilterBuilder.Equals(nameof(IBaseModel.is_deleted), false).Build(),
+                }
+            };
+        }
+
         string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/filter/{HttpUtility.UrlEncode(JsonSerializer.Serialize(filter, _json_options_filter))}";
         using HttpRequestMessage request = new(HttpMethod.Get, url);
         _configureAuth(request);
@@ -89,7 +107,7 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
         return result;
     }
 
-    public async Task<TModel?> GetByIdAsync(string id)
+    public async Task<TModel?> GetByIdAsync(string id, QueryOptions? options = null)
     {
         if (string.IsNullOrEmpty(id)) throw new ArgumentOutOfRangeException(nameof(id));
 
@@ -105,6 +123,12 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
 
         await using Stream stream = await response.Content.ReadAsStreamAsync();
         TModel? result = await JsonSerializer.DeserializeAsync<TModel>(stream, options: _json_options);
+
+        if (result is { is_deleted: true } && options is { with_deleted: false })
+        {
+            result = null;
+        }
+
         return result;
     }
 

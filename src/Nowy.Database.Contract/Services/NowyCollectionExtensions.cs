@@ -26,19 +26,20 @@ public static class NowyCollectionExtensions
         this INowyCollection<TModel> collection,
         ILogger? logger,
         IReadOnlyList<TModel> items_previous,
-        IReadOnlyList<TModel> items_input
+        IReadOnlyList<TModel> items_input,
+        bool soft_delete = true
     ) where TModel : class, IBaseModel, IUniqueModel
     {
         string model_name = typeof(TModel).Name;
 
-        if (items_previous.Any(o => o is IDeletableModel od && od.is_deleted))
+        if (items_previous.Any(o => o.is_deleted))
         {
-            items_previous = items_previous.Where(o => !( o is IDeletableModel od && od.is_deleted )).ToList();
+            items_previous = items_previous.Where(o => o.is_deleted == false).ToList();
         }
 
-        if (items_input.Any(o => o is IDeletableModel od && od.is_deleted))
+        if (items_input.Any(o => o.is_deleted))
         {
-            items_input = items_input.Where(o => !( o is IDeletableModel od && od.is_deleted )).ToList();
+            items_input = items_input.Where(o => o.is_deleted == false).ToList();
         }
 
         Dictionary<string, TModel> items_input_by_key = items_input.ToDictionary(o => o.GetKey(), o => o);
@@ -61,8 +62,7 @@ public static class NowyCollectionExtensions
         foreach (TModel item in items_to_add.Values)
         {
             // ReSharper disable once SuspiciousTypeConversion.Global
-            if (item is IDeletableModel deletable_item)
-                deletable_item.is_deleted = false;
+            item.is_deleted = false;
 
             logger?.LogInformation("Ensure {model_name}s exist: add item: {item}", model_name, item);
 
@@ -72,11 +72,11 @@ public static class NowyCollectionExtensions
         foreach (TModel item in items_to_remove.Values)
         {
             // ReSharper disable once SuspiciousTypeConversion.Global
-            if (item is IDeletableModel deletable_item)
+            if (soft_delete)
             {
                 logger?.LogInformation("Ensure {model_name}s exist: remove item: {item}", model_name, item);
 
-                deletable_item.is_deleted = true;
+                item.is_deleted = true;
                 await collection.UpdateAsync(item.id, item);
             }
             else

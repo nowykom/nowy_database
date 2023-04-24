@@ -33,8 +33,14 @@ internal sealed class MongoNowyCollection<TModel> : INowyCollection<TModel> wher
     string INowyCollection<TModel>.DatabaseName => this._database_name;
     string INowyCollection<TModel>.EntityName => this._entity_name;
 
-    public async Task<IReadOnlyList<TModel>> GetAllAsync()
+    public async Task<IReadOnlyList<TModel>> GetAllAsync(QueryOptions? options = null)
     {
+        if (options is { with_deleted: false })
+        {
+            ModelFilter filter = ModelFilterBuilder.Equals(nameof(IBaseModel.is_deleted), false).Build();
+            return await GetByFilterAsync(filter, new QueryOptions(with_deleted: true));
+        }
+
         List<BsonDocument> list = await _repo.GetAllAsync(database_name: _database_name, entity_name: _entity_name);
 
         await using MemoryStream stream = await list.MongoToJsonStream();
@@ -43,8 +49,20 @@ internal sealed class MongoNowyCollection<TModel> : INowyCollection<TModel> wher
         return result;
     }
 
-    public async Task<IReadOnlyList<TModel>> GetByFilterAsync(ModelFilter filter)
+    public async Task<IReadOnlyList<TModel>> GetByFilterAsync(ModelFilter filter, QueryOptions? options = null)
     {
+        if (options is { with_deleted: false })
+        {
+            filter = new()
+            {
+                FiltersAnd = new()
+                {
+                    filter,
+                    ModelFilterBuilder.Equals(nameof(IBaseModel.is_deleted), false).Build(),
+                }
+            };
+        }
+
         List<BsonDocument> list = await _repo.GetByFilterAsync(database_name: _database_name, entity_name: _entity_name, filter: filter);
 
         await using MemoryStream stream = await list.MongoToJsonStream();
@@ -53,7 +71,7 @@ internal sealed class MongoNowyCollection<TModel> : INowyCollection<TModel> wher
         return result;
     }
 
-    public async Task<TModel?> GetByIdAsync(string id)
+    public async Task<TModel?> GetByIdAsync(string id, QueryOptions? options = null)
     {
         BsonDocument? document = await _repo.GetByIdAsync(database_name: _database_name, entity_name: _entity_name, id: id);
 
@@ -62,12 +80,16 @@ internal sealed class MongoNowyCollection<TModel> : INowyCollection<TModel> wher
             await using MemoryStream stream = await document.MongoToJsonStream();
 
             TModel? result = await JsonSerializer.DeserializeAsync<TModel>(stream, options: _json_options);
+
+            if (result is { is_deleted: true } && options is { with_deleted: false })
+            {
+                result = null;
+            }
+
             return result;
         }
-        else
-        {
-            return null;
-        }
+
+        return null;
     }
 
     public async Task<TModel> InsertAsync(string id, TModel model)

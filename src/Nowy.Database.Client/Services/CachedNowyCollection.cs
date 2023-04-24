@@ -45,20 +45,28 @@ internal sealed class CachedNowyCollection<TModel> : INowyCollection<TModel> whe
     string INowyCollection<TModel>.DatabaseName => this._database_name;
     string INowyCollection<TModel>.EntityName => this._entity_name;
 
-    public async Task<IReadOnlyList<TModel>> GetAllAsync()
+    public async Task<IReadOnlyList<TModel>> GetAllAsync(QueryOptions? options = null)
     {
+        if (options is { with_deleted: false })
+            return this._cache_service.Fetch<TModel>(q => q.Where(o => o.is_deleted == false));
         return this._cache_service.Fetch<TModel>();
     }
 
-    public async Task<IReadOnlyList<TModel>> GetByFilterAsync(ModelFilter filter)
+    public async Task<IReadOnlyList<TModel>> GetByFilterAsync(ModelFilter filter, QueryOptions? options = null)
     {
         // TODO
         throw new NotImplementedException();
     }
 
-    public Task<TModel?> GetByIdAsync(string id)
+    public Task<TModel?> GetByIdAsync(string id, QueryOptions? options = null)
     {
         TModel? o = this._cache_service.FetchById<TModel>(id);
+
+        if (o is { is_deleted: true } && options is { with_deleted: false })
+        {
+            o = null;
+        }
+
         return Task.FromResult(o);
     }
 

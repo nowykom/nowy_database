@@ -43,6 +43,16 @@ internal sealed class MongoNowyCollection<TModel> : INowyCollection<TModel> wher
         return result;
     }
 
+    public async Task<IReadOnlyList<TModel>> GetByFilterAsync(ModelFilter filter)
+    {
+        List<BsonDocument> list = await _repo.GetByFilterAsync(database_name: _database_name, entity_name: _entity_name, filter: filter);
+
+        await using MemoryStream stream = await list.MongoToJsonStream();
+
+        List<TModel>? result = await JsonSerializer.DeserializeAsync<List<TModel>>(stream, options: _json_options) ?? new();
+        return result;
+    }
+
     public async Task<TModel?> GetByIdAsync(string id)
     {
         BsonDocument? document = await _repo.GetByIdAsync(database_name: _database_name, entity_name: _entity_name, id: id);

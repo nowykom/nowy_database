@@ -13,7 +13,7 @@ public class DefaultNowyCollectionEventSubscription<TModel> : INowyCollectionEve
     private INowyCollection<TModel>? _collection;
     private ILogger? _logger;
     private INowyMessageHub? _message_hub;
-    private ImmutableArray<(Type event_type, Func<ValueTask> action)> _handlers = ImmutableArray<(Type event_type, Func<ValueTask> action)>.Empty;
+    private ImmutableArray<(Type event_type, Func<CollectionEvent, ValueTask> action)> _handlers = ImmutableArray<(Type event_type, Func<CollectionEvent, ValueTask> action)>.Empty;
 
     public DefaultNowyCollectionEventSubscription(INowyCollection<TModel> collection, ILogger logger, INowyMessageHub message_hub)
     {
@@ -36,49 +36,49 @@ public class DefaultNowyCollectionEventSubscription<TModel> : INowyCollectionEve
         });
     }
 
-    private async ValueTask _handleReceivedEvent(CollectionEvent value)
+    private async ValueTask _handleReceivedEvent(CollectionEvent event_value)
     {
-        Type event_type = value.GetType();
-        foreach (( Type event_type, Func<ValueTask> action ) handler in this._handlers)
+        Type event_type = event_value.GetType();
+        foreach (( Type event_type, Func<CollectionEvent, ValueTask> action ) handler in this._handlers)
         {
             if (event_type == handler.event_type)
             {
                 try
                 {
-                    await handler.action();
+                    await handler.action(event_value);
                 }
                 catch (Exception ex)
                 {
-                    this._logger?.LogError(ex, "Error during database collection event handler: {event}", value);
+                    this._logger?.LogError(ex, "Error during database collection event handler: {event}", event_value);
                 }
             }
         }
     }
 
-    public INowyCollectionEventSubscription<TModel> AddHandler<TEvent>(Action handler) where TEvent : CollectionEvent
+    public INowyCollectionEventSubscription<TModel> AddHandler<TEvent>(Action<TEvent> handler) where TEvent : CollectionEvent
     {
         _ensureSubscription<TEvent>();
-        this._handlers = this._handlers.Add(( typeof(TEvent), () =>
+        this._handlers = this._handlers.Add(( typeof(TEvent), e =>
         {
-            handler();
+            handler((TEvent)e);
             return ValueTask.CompletedTask;
         } ));
         return this;
     }
 
-    INowyCollectionEventSubscription INowyCollectionEventSubscription.AddHandler<TEvent>(Action handler)
+    INowyCollectionEventSubscription INowyCollectionEventSubscription.AddHandler<TEvent>(Action<TEvent> handler)
     {
         return this.AddHandler<TEvent>(handler);
     }
 
-    public INowyCollectionEventSubscription<TModel> AddHandler<TEvent>(Func<ValueTask> handler) where TEvent : CollectionEvent
+    public INowyCollectionEventSubscription<TModel> AddHandler<TEvent>(Func<TEvent, ValueTask> handler) where TEvent : CollectionEvent
     {
         _ensureSubscription<TEvent>();
-        this._handlers = this._handlers.Add(( typeof(TEvent), handler ));
+        this._handlers = this._handlers.Add(( typeof(TEvent), e => handler((TEvent)e) ));
         return this;
     }
 
-    INowyCollectionEventSubscription INowyCollectionEventSubscription.AddHandler<TEvent>(Func<ValueTask> handler)
+    INowyCollectionEventSubscription INowyCollectionEventSubscription.AddHandler<TEvent>(Func<TEvent, ValueTask> handler)
     {
         return this.AddHandler<TEvent>(handler);
     }

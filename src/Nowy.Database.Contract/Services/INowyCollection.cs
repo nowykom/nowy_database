@@ -8,6 +8,7 @@ public interface INowyCollection<TModel> where TModel : class, IBaseModel
     string EntityName { get; }
 
     Task<IReadOnlyList<TModel>> GetAllAsync();
+    Task<IReadOnlyList<TModel>> GetByFilterAsync(ModelFilter filter);
     Task<TModel?> GetByIdAsync(string id);
     Task<TModel> InsertAsync(string id, TModel model);
     Task<TModel> UpdateAsync(string id, TModel model);

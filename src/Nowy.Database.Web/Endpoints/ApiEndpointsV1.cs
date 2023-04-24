@@ -1,7 +1,9 @@
 ﻿using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using Nowy.Database.Contract.Models;
 using Nowy.Database.Web.Services;
 
 namespace Nowy.Database.Web.Endpoints;
@@ -18,6 +20,7 @@ public class ApiEndpointsV1
     public void MapEndpoints(RouteGroupBuilder app)
     {
         app.MapGet("{database_name}/{entity_name}", GetAllAsync);
+        app.MapGet("{database_name}/{entity_name}/filter/{filter_json}", GetByFilterAsync);
         app.MapGet("{database_name}/{entity_name}/{id}", GetByIdAsync);
         app.MapPost("{database_name}/{entity_name}/{id}", UpsertAsync);
         app.MapPut("{database_name}/{entity_name}/{id}", UpsertAsync);
@@ -31,6 +34,20 @@ public class ApiEndpointsV1
         _logger.LogInformation($"{nameof(GetAllAsync)}: {nameof(database_name)} = {database_name}, {nameof(entity_name)} = {entity_name}");
 
         List<BsonDocument> list = await repo.GetAllAsync(database_name: database_name, entity_name: entity_name);
+
+        await using MemoryStream stream = await list.MongoToJsonStream();
+        return TypedResults.Bytes(stream.ToArray(), "application/json");
+    }
+
+    public async Task<Results<FileContentHttpResult, NotFound>> GetByFilterAsync(
+        MongoRepository repo, string database_name, string entity_name, string filter_json
+    )
+    {
+        _logger.LogInformation($"{nameof(GetAllAsync)}: {nameof(database_name)} = {database_name}, {nameof(entity_name)} = {entity_name}");
+
+        ModelFilter filter = JsonSerializer.Deserialize<ModelFilter>(filter_json) ?? throw new ArgumentNullException(nameof(filter_json));
+
+        List<BsonDocument> list = await repo.GetByFilterAsync(database_name: database_name, entity_name: entity_name, filter: filter);
 
         await using MemoryStream stream = await list.MongoToJsonStream();
         return TypedResults.Bytes(stream.ToArray(), "application/json");

@@ -9,11 +9,13 @@ namespace Nowy.Database.Web.Services;
 
 public class MongoRepository
 {
+    private readonly ILogger _logger;
     private readonly IMongoClient _mongo_client;
     private readonly INowyMessageHub _message_hub;
 
-    public MongoRepository(IMongoClient mongo_client, INowyMessageHub message_hub)
+    public MongoRepository(ILogger<MongoRepository> logger, IMongoClient mongo_client, INowyMessageHub message_hub)
     {
+        _logger = logger;
         _mongo_client = mongo_client;
         _message_hub = message_hub;
     }
@@ -73,6 +75,27 @@ public class MongoRepository
         IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(entity_name) ?? throw new ArgumentNullException(nameof(collection));
 
         List<BsonDocument> list = await collection.Find(_ => true).ToListAsync();
+
+        foreach (BsonDocument document in list)
+        {
+            _convertIntoTransfer(document);
+        }
+
+        return list;
+    }
+
+    public async Task<List<BsonDocument>> GetByFilterAsync(string database_name, string entity_name, ModelFilter filter)
+    {
+        IMongoDatabase database = _mongo_client.GetDatabase(database_name) ?? throw new ArgumentNullException(nameof(database));
+        IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(entity_name) ?? throw new ArgumentNullException(nameof(collection));
+
+        FilterDefinition<BsonDocument> filter_bson = filter.ToMongoFilter();
+        _logger.LogInformation(
+            "Filter: {filter_bson}",
+            filter_bson.Render(collection.DocumentSerializer, collection.Settings.SerializerRegistry).ToString()
+        );
+
+        List<BsonDocument> list = await collection.Find(filter_bson).ToListAsync();
 
         foreach (BsonDocument document in list)
         {
@@ -151,11 +174,13 @@ public class MongoRepository
             {
                 CollectionEvent collection_event = new CollectionModelsInsertedEvent { DatabaseName = database_name, EntityName = entity_name, };
                 CollectionModelEvent collection_model_event = new CollectionModelInsertedEvent { DatabaseName = database_name, EntityName = entity_name, Id = id, };
+                CollectionChangedEvent collection_changed_event = new CollectionChangedEvent { DatabaseName = database_name, EntityName = entity_name, };
 
                 this._message_hub.QueueEvent(config =>
                 {
                     config.AddValue(collection_event);
                     config.AddValue(collection_model_event);
+                    config.AddValue(collection_changed_event);
                 });
             }
 
@@ -163,11 +188,13 @@ public class MongoRepository
             {
                 CollectionEvent collection_event = new CollectionModelsUpdatedEvent { DatabaseName = database_name, EntityName = entity_name, };
                 CollectionModelEvent collection_model_event = new CollectionModelUpdatedEvent { DatabaseName = database_name, EntityName = entity_name, Id = id, };
+                CollectionChangedEvent collection_changed_event = new CollectionChangedEvent { DatabaseName = database_name, EntityName = entity_name, };
 
                 this._message_hub.QueueEvent(config =>
                 {
                     config.AddValue(collection_event);
                     config.AddValue(collection_model_event);
+                    config.AddValue(collection_changed_event);
                 });
             }
         }
@@ -204,11 +231,13 @@ public class MongoRepository
         {
             CollectionEvent collection_event = new CollectionModelsDeletedEvent { DatabaseName = database_name, EntityName = entity_name, };
             CollectionModelEvent collection_model_event = new CollectionModelDeletedEvent { DatabaseName = database_name, EntityName = entity_name, Id = id, };
+            CollectionChangedEvent collection_changed_event = new CollectionChangedEvent { DatabaseName = database_name, EntityName = entity_name, };
 
             this._message_hub.QueueEvent(config =>
             {
                 config.AddValue(collection_event);
                 config.AddValue(collection_model_event);
+                config.AddValue(collection_changed_event);
             });
         }
 

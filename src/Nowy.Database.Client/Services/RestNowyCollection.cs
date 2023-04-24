@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Web;
 using Microsoft.Extensions.Logging;
 using Nowy.Database.Contract.Models;
 using Nowy.Database.Contract.Services;
@@ -20,6 +22,12 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
     private readonly string _entity_name;
 
     private static readonly JsonSerializerOptions _json_options = new JsonSerializerOptions() { PropertyNamingPolicy = null, };
+
+    private static readonly JsonSerializerOptions _json_options_filter = new JsonSerializerOptions()
+    {
+        PropertyNamingPolicy = null,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
 
     public RestNowyCollection(
         ILogger logger,
@@ -69,8 +77,22 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
         return result;
     }
 
+    public async Task<IReadOnlyList<TModel>> GetByFilterAsync(ModelFilter filter)
+    {
+        string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/filter/{HttpUtility.UrlEncode(JsonSerializer.Serialize(filter, _json_options_filter))}";
+        using HttpRequestMessage request = new(HttpMethod.Get, url);
+        _configureAuth(request);
+
+        using HttpResponseMessage response = await _http_client.SendAsync(request);
+        await using Stream stream = await response.Content.ReadAsStreamAsync();
+        List<TModel>? result = await JsonSerializer.DeserializeAsync<List<TModel>>(stream, options: _json_options) ?? new();
+        return result;
+    }
+
     public async Task<TModel?> GetByIdAsync(string id)
     {
+        if (string.IsNullOrEmpty(id)) throw new ArgumentOutOfRangeException(nameof(id));
+
         string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{id}";
         using HttpRequestMessage request = new(HttpMethod.Get, url);
         _configureAuth(request);
@@ -88,6 +110,8 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
 
     public async Task<TModel> InsertAsync(string id, TModel model)
     {
+        if (string.IsNullOrEmpty(id)) throw new ArgumentOutOfRangeException(nameof(id));
+
         string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{id}";
         using HttpRequestMessage request = new(HttpMethod.Post, url);
         _configureAuth(request);
@@ -102,6 +126,8 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
 
     public async Task<TModel> UpdateAsync(string id, TModel model)
     {
+        if (string.IsNullOrEmpty(id)) throw new ArgumentOutOfRangeException(nameof(id));
+
         string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{id}";
         using HttpRequestMessage request = new(HttpMethod.Post, url);
         _configureAuth(request);
@@ -116,6 +142,8 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
 
     public async Task DeleteAsync(string id)
     {
+        if (string.IsNullOrEmpty(id)) throw new ArgumentOutOfRangeException(nameof(id));
+
         string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{id}";
         using HttpRequestMessage request = new(HttpMethod.Delete, url);
         _configureAuth(request);

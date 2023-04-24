@@ -50,6 +50,12 @@ internal sealed class CachedNowyCollection<TModel> : INowyCollection<TModel> whe
         return this._cache_service.Fetch<TModel>();
     }
 
+    public async Task<IReadOnlyList<TModel>> GetByFilterAsync(ModelFilter filter)
+    {
+        // TODO
+        throw new NotImplementedException();
+    }
+
     public Task<TModel?> GetByIdAsync(string id)
     {
         TModel? o = this._cache_service.FetchById<TModel>(id);

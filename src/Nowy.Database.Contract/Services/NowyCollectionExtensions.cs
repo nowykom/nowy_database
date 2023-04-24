@@ -60,7 +60,7 @@ public static class NowyCollectionExtensions
             .Where(kvp => items_previous_by_key.ContainsKey(kvp.Key))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-        logger?.LogInformation("Ensure {model_name}s exist: count items to add: {count_items_to_add}", model_name, items_to_add.Count);
+        logger?.LogInformation("Ensure {model_name}s exist: count items to add:    {count_items_to_add}", model_name, items_to_add.Count);
         logger?.LogInformation("Ensure {model_name}s exist: count items to update: {count_items_to_update}", model_name, items_to_update.Count);
         logger?.LogInformation("Ensure {model_name}s exist: count items to remove: {count_items_to_remove}", model_name, items_to_remove.Count);
 

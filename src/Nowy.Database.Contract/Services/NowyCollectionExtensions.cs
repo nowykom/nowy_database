@@ -56,7 +56,12 @@ public static class NowyCollectionExtensions
             .Where(kvp => !items_input_by_key.ContainsKey(kvp.Key))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
+        Dictionary<string, TModel> items_to_update = items_input_by_key
+            .Where(kvp => items_previous_by_key.ContainsKey(kvp.Key))
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
         logger?.LogInformation("Ensure {model_name}s exist: count items to add: {count_items_to_add}", model_name, items_to_add.Count);
+        logger?.LogInformation("Ensure {model_name}s exist: count items to update: {count_items_to_update}", model_name, items_to_update.Count);
         logger?.LogInformation("Ensure {model_name}s exist: count items to remove: {count_items_to_remove}", model_name, items_to_remove.Count);
 
         foreach (TModel item in items_to_add.Values)
@@ -65,6 +70,16 @@ public static class NowyCollectionExtensions
             item.is_deleted = false;
 
             logger?.LogInformation("Ensure {model_name}s exist: add item: {item}", model_name, item);
+
+            await collection.InsertAsync(item.id, item);
+        }
+
+        foreach (TModel item in items_to_update.Values)
+        {
+            // ReSharper disable once SuspiciousTypeConversion.Global
+            item.is_deleted = false;
+
+            logger?.LogInformation("Ensure {model_name}s exist: update item: {item}", model_name, item);
 
             await collection.InsertAsync(item.id, item);
         }

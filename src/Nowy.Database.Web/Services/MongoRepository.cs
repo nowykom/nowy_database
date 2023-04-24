@@ -148,6 +148,7 @@ public class MongoRepository
             filters_or.Add(Builders<BsonDocument>.Filter.Eq("_id", id2));
             filters_or.Add(Builders<BsonDocument>.Filter.In("_ids", new[] { id2, }));
         }
+
         FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Or(filters_or);
 
         bool is_inserted = false;
@@ -156,9 +157,11 @@ public class MongoRepository
         BsonDocument? document = await collection.Find(filter).FirstOrDefaultAsync();
         if (document is not null)
         {
+            BsonDocument input_clone = (BsonDocument)input.DeepClone();
+            input_clone.Remove("_id");
             await collection.UpdateOneAsync(filter, new BsonDocument
             {
-                ["$set"] = input,
+                ["$set"] = input_clone,
             });
 
             is_updated = true;

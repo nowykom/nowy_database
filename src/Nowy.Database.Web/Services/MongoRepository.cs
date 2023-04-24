@@ -140,11 +140,15 @@ public class MongoRepository
         input["id"] = id;
         this._convertFromTransfer(input);
 
-        FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Or(
-            Builders<BsonDocument>.Filter.Eq("_id", id),
-            Builders<BsonDocument>.Filter.In("_ids", new[] { id, })
-        );
-
+        List<FilterDefinition<BsonDocument>> filters_or = new();
+        filters_or.Add(Builders<BsonDocument>.Filter.Eq("_id", id));
+        filters_or.Add(Builders<BsonDocument>.Filter.In("_ids", new[] { id, }));
+        foreach (string id2 in input["_ids"].AsBsonArray.Values.Select(o => o.AsString))
+        {
+            filters_or.Add(Builders<BsonDocument>.Filter.Eq("_id", id2));
+            filters_or.Add(Builders<BsonDocument>.Filter.In("_ids", new[] { id2, }));
+        }
+        FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Or(filters_or);
 
         bool is_inserted = false;
         bool is_updated = false;

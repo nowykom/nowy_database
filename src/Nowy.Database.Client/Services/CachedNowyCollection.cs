@@ -47,6 +47,8 @@ internal sealed class CachedNowyCollection<TModel> : INowyCollection<TModel> whe
 
     public async Task<IReadOnlyList<TModel>> GetAllAsync(QueryOptions? options = null)
     {
+        options ??= new();
+
         if (options is { with_deleted: false })
             return this._cache_service.Fetch<TModel>(q => q.Where(o => o.is_deleted == false));
         return this._cache_service.Fetch<TModel>();
@@ -54,12 +56,16 @@ internal sealed class CachedNowyCollection<TModel> : INowyCollection<TModel> whe
 
     public async Task<IReadOnlyList<TModel>> GetByFilterAsync(ModelFilter filter, QueryOptions? options = null)
     {
+        options ??= new();
+
         // TODO
         throw new NotImplementedException();
     }
 
     public Task<TModel?> GetByIdAsync(string id, QueryOptions? options = null)
     {
+        options ??= new();
+
         TModel? o = this._cache_service.FetchById<TModel>(id);
 
         if (o is { is_deleted: true } && options is { with_deleted: false })

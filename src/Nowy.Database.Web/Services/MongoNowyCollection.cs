@@ -35,6 +35,8 @@ internal sealed class MongoNowyCollection<TModel> : INowyCollection<TModel> wher
 
     public async Task<IReadOnlyList<TModel>> GetAllAsync(QueryOptions? options = null)
     {
+        options ??= new();
+
         if (options is { with_deleted: false })
         {
             ModelFilter filter = ModelFilterBuilder.Equals(nameof(IBaseModel.is_deleted), false).Build();
@@ -51,6 +53,8 @@ internal sealed class MongoNowyCollection<TModel> : INowyCollection<TModel> wher
 
     public async Task<IReadOnlyList<TModel>> GetByFilterAsync(ModelFilter filter, QueryOptions? options = null)
     {
+        options ??= new();
+
         if (options is { with_deleted: false })
         {
             filter = new()
@@ -73,6 +77,8 @@ internal sealed class MongoNowyCollection<TModel> : INowyCollection<TModel> wher
 
     public async Task<TModel?> GetByIdAsync(string id, QueryOptions? options = null)
     {
+        options ??= new();
+
         BsonDocument? document = await _repo.GetByIdAsync(database_name: _database_name, entity_name: _entity_name, id: id);
 
         if (document is { })

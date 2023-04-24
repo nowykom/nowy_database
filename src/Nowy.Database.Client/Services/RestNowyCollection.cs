@@ -67,6 +67,8 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
 
     public async Task<IReadOnlyList<TModel>> GetAllAsync(QueryOptions? options = null)
     {
+        options ??= new();
+
         if (options is { with_deleted: false })
         {
             ModelFilter filter = ModelFilterBuilder.Equals(nameof(IBaseModel.is_deleted), false).Build();
@@ -85,6 +87,8 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
 
     public async Task<IReadOnlyList<TModel>> GetByFilterAsync(ModelFilter filter, QueryOptions? options = null)
     {
+        options ??= new();
+
         if (options is { with_deleted: false })
         {
             filter = new()
@@ -109,6 +113,8 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
 
     public async Task<TModel?> GetByIdAsync(string id, QueryOptions? options = null)
     {
+        options ??= new();
+
         if (string.IsNullOrEmpty(id)) throw new ArgumentOutOfRangeException(nameof(id));
 
         string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{id}";

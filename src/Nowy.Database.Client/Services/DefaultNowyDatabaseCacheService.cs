@@ -355,7 +355,7 @@ internal sealed class DefaultNowyDatabaseCacheService : BackgroundService, INowy
 
                     try
                     {
-                        await collection.InsertAsync(model.id, model);
+                        await collection.UpsertAsync(model.id, model);
                     }
                     catch (NowyDatabaseException ex) // when (ex.WriteError.Category == ServerErrorCategory.DuplicateKey)
                     {
@@ -367,7 +367,7 @@ internal sealed class DefaultNowyDatabaseCacheService : BackgroundService, INowy
                     model.meta_temp[MetaTemp.timestamp_database_update] = timestamp_millis_now.ToString();
                     model.is_modified = false;
 
-                    await collection.UpdateAsync(model.id, model);
+                    await collection.UpsertAsync(model.id, model);
                 }
             }
         } while (models_to_save.Length != 0);

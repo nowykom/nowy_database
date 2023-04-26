@@ -39,10 +39,10 @@ public class UnitTest1
 
         TestModel a;
 
-        a = await collection.InsertAsync("123", new TestModel() { Fuck = "A" });
+        a = await collection.UpsertAsync("123", new TestModel() { Fuck = "A" });
         Assert.Equal("A", a.Fuck);
 
-        a = await collection.InsertAsync("123", new TestModel() { Fuck = "B" });
+        a = await collection.UpsertAsync("123", new TestModel() { Fuck = "B" });
         Assert.Equal("B", a.Fuck);
     }
 
@@ -55,10 +55,10 @@ public class UnitTest1
 
         TestModel a;
 
-        a = await collection.UpdateAsync("123", new TestModel() { Fuck = "C" });
+        a = await collection.UpsertAsync("123", new TestModel() { Fuck = "C" });
         Assert.Equal("C", a.Fuck);
 
-        a = await collection.UpdateAsync("123", new TestModel() { Fuck = "D" });
+        a = await collection.UpsertAsync("123", new TestModel() { Fuck = "D" });
         Assert.Equal("D", a.Fuck);
     }
 
@@ -76,14 +76,14 @@ public class UnitTest1
         a = await collection.GetByIdAsync("123");
         Assert.Null(a);
 
-        a = await collection.InsertAsync("123", new TestModel() { Fuck = "XYZ" });
+        a = await collection.UpsertAsync("123", new TestModel() { Fuck = "XYZ" });
         Assert.Equal("XYZ", a.Fuck);
 
         a = await collection.GetByIdAsync("123");
         Assert.NotNull(a);
         Assert.Equal("XYZ", a.Fuck);
 
-        a = await collection.UpdateAsync("123", new TestModel() { Fuck = "C" });
+        a = await collection.UpsertAsync("123", new TestModel() { Fuck = "C" });
         Assert.Equal("C", a.Fuck);
     }
 

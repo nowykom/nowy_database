@@ -40,7 +40,7 @@ public class UnitTest3
         TestModel a;
         IReadOnlyList<TestModel> filtered_result;
 
-        a = await collection.InsertAsync("456", new TestModel() { Fuck = "A" });
+        a = await collection.UpsertAsync("456", new TestModel() { Fuck = "A" });
         Assert.Equal("A", a.Fuck);
 
         filtered_result = await collection.GetByFilterAsync(
@@ -66,7 +66,7 @@ public class UnitTest3
         );
         Assert.Empty(filtered_result);
 
-        a = await collection.InsertAsync("456", new TestModel() { Fuck = "B" });
+        a = await collection.UpsertAsync("456", new TestModel() { Fuck = "B" });
         Assert.Equal("B", a.Fuck);
 
         filtered_result = await collection.GetByFilterAsync(

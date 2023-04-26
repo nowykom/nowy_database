@@ -73,7 +73,11 @@ public static class NowyCollectionExtensions
             // ReSharper disable once SuspiciousTypeConversion.Global
             item.is_deleted = false;
 
-            logger?.LogInformation("Ensure {model_name}s exist: add item: {@item}", model_name, item);
+            logger?.LogInformation(
+                "Ensure {model_name}s exist: add item: {item_key}",
+                model_name,
+                item.GetKey()
+            );
 
             await collection.UpsertAsync(item.id, item);
         }
@@ -88,10 +92,9 @@ public static class NowyCollectionExtensions
                 item_input.is_deleted = false;
 
                 logger?.LogInformation(
-                    "Ensure {model_name}s exist: update item (copy some properties): {@item_original} => {@item_input}",
+                    "Ensure {model_name}s exist: update item: {item_input}",
                     model_name,
-                    item_original,
-                    item_input
+                    item_input.GetKey()
                 );
 
                 update_func(item_original, item_input);
@@ -102,10 +105,9 @@ public static class NowyCollectionExtensions
                 item_input.is_deleted = false;
 
                 logger?.LogInformation(
-                    "Ensure {model_name}s exist: replace item with input: {@item_original} => {@item_input}",
+                    "Ensure {model_name}s exist: replace item with input: {item_input_key}",
                     model_name,
-                    item_original,
-                    item_input
+                    item_input.GetKey()
                 );
 
                 await collection.UpsertAsync(item_input.id, item_input);
@@ -117,14 +119,22 @@ public static class NowyCollectionExtensions
             // ReSharper disable once SuspiciousTypeConversion.Global
             if (soft_delete)
             {
-                logger?.LogInformation("Ensure {model_name}s exist: remove item: {@item}", model_name, item);
+                logger?.LogInformation(
+                    "Ensure {model_name}s exist: remove item: {item_key}",
+                    model_name,
+                    item.GetKey()
+                );
 
                 item.is_deleted = true;
                 await collection.UpsertAsync(item.id, item);
             }
             else
             {
-                logger?.LogInformation("Ensure {model_name}s exist: remove item: {@item}", model_name, item);
+                logger?.LogInformation(
+                    "Ensure {model_name}s exist: remove item: {item_key}",
+                    model_name,
+                    item.GetKey()
+                );
 
                 await collection.DeleteAsync(item.id);
             }

@@ -5,6 +5,8 @@ namespace Nowy.Database.Contract.Services;
 
 public delegate void EnsureModelsExistUpdateFunction<in TModel>(TModel model_original, TModel model_input) where TModel : class, IBaseModel, IUniqueModel;
 
+public delegate bool EnsureModelsExistShouldUpdateFunction<in TModel>(TModel model_original, TModel model_input) where TModel : class, IBaseModel, IUniqueModel;
+
 public static class NowyCollectionExtensions
 {
     public static Task<IReadOnlyList<TModel>> GetByFilterAsync<TModel>(this INowyCollection<TModel> that, ModelFilterBuilder filter_builder) where TModel : class, IBaseModel
@@ -30,7 +32,8 @@ public static class NowyCollectionExtensions
         IReadOnlyList<TModel> items_previous,
         IReadOnlyList<TModel> items_input,
         bool soft_delete = true,
-        EnsureModelsExistUpdateFunction<TModel>? update_func = null
+        EnsureModelsExistUpdateFunction<TModel>? update_func = null,
+        EnsureModelsExistShouldUpdateFunction<TModel>? should_update_func = null
     ) where TModel : class, IBaseModel, IUniqueModel
     {
         string model_name = typeof(TModel).Name;
@@ -88,17 +91,20 @@ public static class NowyCollectionExtensions
 
             if (update_func is { })
             {
-                item_original.is_deleted = false;
-                item_input.is_deleted = false;
+                if (should_update_func is null || should_update_func(item_original, item_input))
+                {
+                    item_original.is_deleted = false;
+                    item_input.is_deleted = false;
 
-                logger?.LogInformation(
-                    "Ensure {model_name}s exist: update item: {item_input}",
-                    model_name,
-                    item_input.GetKey()
-                );
+                    logger?.LogInformation(
+                        "Ensure {model_name}s exist: update item: {item_input}",
+                        model_name,
+                        item_input.GetKey()
+                    );
 
-                update_func(item_original, item_input);
-                await collection.UpsertAsync(item_original.id, item_original);
+                    update_func(item_original, item_input);
+                    await collection.UpsertAsync(item_original.id, item_original);
+                }
             }
             else
             {

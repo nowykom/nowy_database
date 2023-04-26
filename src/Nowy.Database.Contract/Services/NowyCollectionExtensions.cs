@@ -3,6 +3,8 @@ using Nowy.Database.Contract.Models;
 
 namespace Nowy.Database.Contract.Services;
 
+public delegate void EnsureModelsExistUpdateFunction<in TModel>(TModel model_original, TModel model_input) where TModel : class, IBaseModel, IUniqueModel;
+
 public static class NowyCollectionExtensions
 {
     public static Task<IReadOnlyList<TModel>> GetByFilterAsync<TModel>(this INowyCollection<TModel> that, ModelFilterBuilder filter_builder) where TModel : class, IBaseModel
@@ -27,7 +29,8 @@ public static class NowyCollectionExtensions
         ILogger? logger,
         IReadOnlyList<TModel> items_previous,
         IReadOnlyList<TModel> items_input,
-        bool soft_delete = true
+        bool soft_delete = true,
+        EnsureModelsExistUpdateFunction<TModel>? update_func = null
     ) where TModel : class, IBaseModel, IUniqueModel
     {
         string model_name = typeof(TModel).Name;
@@ -52,12 +55,13 @@ public static class NowyCollectionExtensions
             .Where(kvp => !items_previous_by_key.ContainsKey(kvp.Key))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
+        Dictionary<string, (TModel item_original, TModel item_input)> items_to_update = items_input_by_key
+            .Select(kvp => ( Key: kvp.Key, ValueOriginal: items_previous_by_key!.Get(kvp.Key, null), ValueInput: kvp.Value ))
+            .Where(o => o.ValueOriginal is { })
+            .ToDictionary(o => o.Key, o => ( o.ValueOriginal!, o.ValueInput ));
+
         Dictionary<string, TModel> items_to_remove = items_previous_by_key
             .Where(kvp => !items_input_by_key.ContainsKey(kvp.Key))
-            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
-        Dictionary<string, TModel> items_to_update = items_input_by_key
-            .Where(kvp => items_previous_by_key.ContainsKey(kvp.Key))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
         logger?.LogInformation("Ensure {model_name}s exist: count items to add:    {count_items_to_add}", model_name, items_to_add.Count);
@@ -69,19 +73,43 @@ public static class NowyCollectionExtensions
             // ReSharper disable once SuspiciousTypeConversion.Global
             item.is_deleted = false;
 
-            logger?.LogInformation("Ensure {model_name}s exist: add item: {item}", model_name, item);
+            logger?.LogInformation("Ensure {model_name}s exist: add item: {@item}", model_name, item);
 
-            await collection.InsertAsync(item.id, item);
+            await collection.UpsertAsync(item.id, item);
         }
 
-        foreach (TModel item in items_to_update.Values)
+        foreach (( TModel item_original, TModel item_input ) in items_to_update.Values)
         {
             // ReSharper disable once SuspiciousTypeConversion.Global
-            item.is_deleted = false;
 
-            logger?.LogInformation("Ensure {model_name}s exist: update item: {item}", model_name, item);
+            if (update_func is { })
+            {
+                item_original.is_deleted = false;
+                item_input.is_deleted = false;
 
-            await collection.InsertAsync(item.id, item);
+                logger?.LogInformation(
+                    "Ensure {model_name}s exist: update item (copy some properties): {@item_original} => {@item_input}",
+                    model_name,
+                    item_original,
+                    item_input
+                );
+
+                update_func(item_original, item_input);
+                await collection.UpsertAsync(item_original.id, item_original);
+            }
+            else
+            {
+                item_input.is_deleted = false;
+
+                logger?.LogInformation(
+                    "Ensure {model_name}s exist: replace item with input: {@item_original} => {@item_input}",
+                    model_name,
+                    item_original,
+                    item_input
+                );
+
+                await collection.UpsertAsync(item_input.id, item_input);
+            }
         }
 
         foreach (TModel item in items_to_remove.Values)
@@ -89,14 +117,14 @@ public static class NowyCollectionExtensions
             // ReSharper disable once SuspiciousTypeConversion.Global
             if (soft_delete)
             {
-                logger?.LogInformation("Ensure {model_name}s exist: remove item: {item}", model_name, item);
+                logger?.LogInformation("Ensure {model_name}s exist: remove item: {@item}", model_name, item);
 
                 item.is_deleted = true;
-                await collection.UpdateAsync(item.id, item);
+                await collection.UpsertAsync(item.id, item);
             }
             else
             {
-                logger?.LogInformation("Ensure {model_name}s exist: remove item: {item}", model_name, item);
+                logger?.LogInformation("Ensure {model_name}s exist: remove item: {@item}", model_name, item);
 
                 await collection.DeleteAsync(item.id);
             }

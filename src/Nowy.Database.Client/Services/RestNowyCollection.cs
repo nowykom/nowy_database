@@ -138,23 +138,7 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
         return result;
     }
 
-    public async Task<TModel> InsertAsync(string id, TModel model)
-    {
-        if (string.IsNullOrEmpty(id)) throw new ArgumentOutOfRangeException(nameof(id));
-
-        string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{id}";
-        using HttpRequestMessage request = new(HttpMethod.Post, url);
-        _configureAuth(request);
-        request.Content = JsonContent.Create(model, mediaType: null, _json_options);
-
-        using HttpResponseMessage response = await _http_client.SendAsync(request);
-        await using Stream stream = await response.Content.ReadAsStreamAsync();
-        TModel? result = await JsonSerializer.DeserializeAsync<TModel>(stream, options: _json_options);
-        _model_service.SendModelUpdated(model);
-        return result ?? throw new ArgumentNullException(nameof(result));
-    }
-
-    public async Task<TModel> UpdateAsync(string id, TModel model)
+    public async Task<TModel> UpsertAsync(string id, TModel model)
     {
         if (string.IsNullOrEmpty(id)) throw new ArgumentOutOfRangeException(nameof(id));
 

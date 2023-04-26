@@ -10,8 +10,7 @@ public interface INowyCollection<TModel> where TModel : class, IBaseModel
     Task<IReadOnlyList<TModel>> GetAllAsync(QueryOptions? options = null);
     Task<IReadOnlyList<TModel>> GetByFilterAsync(ModelFilter filter, QueryOptions? options = null);
     Task<TModel?> GetByIdAsync(string id, QueryOptions? options = null);
-    Task<TModel> InsertAsync(string id, TModel model);
-    Task<TModel> UpdateAsync(string id, TModel model);
+    Task<TModel> UpsertAsync(string id, TModel model);
     Task DeleteAsync(string id);
     INowyCollectionEventSubscription<TModel> Subscribe();
 }

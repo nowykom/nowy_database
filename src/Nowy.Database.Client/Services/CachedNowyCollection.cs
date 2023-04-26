@@ -76,14 +76,7 @@ internal sealed class CachedNowyCollection<TModel> : INowyCollection<TModel> whe
         return Task.FromResult(o);
     }
 
-    public Task<TModel> InsertAsync(string id, TModel model)
-    {
-        this._cache_service.Add(model);
-        this._cache_service.Save();
-        return Task.FromResult(model);
-    }
-
-    public Task<TModel> UpdateAsync(string id, TModel model)
+    public Task<TModel> UpsertAsync(string id, TModel model)
     {
         this._cache_service.Add(model);
         this._cache_service.Save();

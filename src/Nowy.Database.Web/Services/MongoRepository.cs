@@ -137,7 +137,6 @@ public class MongoRepository
         }
 
         await _semaphore_upsert.WaitAsync();
-
         try
         {
             IMongoDatabase database = _mongo_client.GetDatabase(database_name) ?? throw new ArgumentNullException(nameof(database));

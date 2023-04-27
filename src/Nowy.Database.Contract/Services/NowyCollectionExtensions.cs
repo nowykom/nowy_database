@@ -7,6 +7,10 @@ public delegate void EnsureModelsExistUpdateFunction<in TModel>(TModel model_ori
 
 public delegate bool EnsureModelsExistShouldUpdateFunction<in TModel>(TModel model_original, TModel model_input) where TModel : class, IBaseModel, IUniqueModel;
 
+public delegate void EnsureModelsExistSoftDeleteFunction<in TModel>(TModel model_original) where TModel : class, IBaseModel, IUniqueModel;
+
+public delegate bool EnsureModelsExistShouldSoftDeleteFunction<in TModel>(TModel model_original) where TModel : class, IBaseModel, IUniqueModel;
+
 public static class NowyCollectionExtensions
 {
     public static Task<IReadOnlyList<TModel>> GetByFilterAsync<TModel>(this INowyCollection<TModel> that, ModelFilterBuilder filter_builder) where TModel : class, IBaseModel
@@ -33,7 +37,9 @@ public static class NowyCollectionExtensions
         IReadOnlyList<TModel> items_input,
         bool soft_delete = true,
         EnsureModelsExistUpdateFunction<TModel>? update_func = null,
-        EnsureModelsExistShouldUpdateFunction<TModel>? should_update_func = null
+        EnsureModelsExistShouldUpdateFunction<TModel>? should_update_func = null,
+        EnsureModelsExistSoftDeleteFunction<TModel>? softdelete_func = null,
+        EnsureModelsExistShouldSoftDeleteFunction<TModel>? should_softdelete_func = null
     ) where TModel : class, IBaseModel, IUniqueModel
     {
         string model_name = typeof(TModel).Name;
@@ -60,7 +66,7 @@ public static class NowyCollectionExtensions
 
         Dictionary<string, (TModel item_original, TModel item_input)> items_to_update = items_input_by_key
             .Select(kvp => ( Key: kvp.Key, ValueOriginal: items_previous_by_key!.Get(kvp.Key, null), ValueInput: kvp.Value ))
-            .Where(o => o.ValueOriginal is { })
+            .Where(o => o.ValueOriginal is not null)
             .ToDictionary(o => o.Key, o => ( o.ValueOriginal!, o.ValueInput ));
 
         Dictionary<string, TModel> items_to_remove = items_previous_by_key
@@ -89,7 +95,7 @@ public static class NowyCollectionExtensions
         {
             // ReSharper disable once SuspiciousTypeConversion.Global
 
-            if (update_func is { })
+            if (update_func is not null)
             {
                 if (should_update_func is null || should_update_func(item_original, item_input))
                 {
@@ -123,7 +129,20 @@ public static class NowyCollectionExtensions
         foreach (TModel item in items_to_remove.Values)
         {
             // ReSharper disable once SuspiciousTypeConversion.Global
-            if (soft_delete)
+            if (softdelete_func is not null)
+            {
+                if (should_softdelete_func is null || should_softdelete_func(item))
+                {
+                    logger?.LogInformation(
+                        "Ensure {model_name}s exist: soft remove item: {item_key}",
+                        model_name,
+                        item.GetKey()
+                    );
+
+                    await collection.UpsertAsync(item.id, item);
+                }
+            }
+            else if (soft_delete)
             {
                 logger?.LogInformation(
                     "Ensure {model_name}s exist: remove item: {item_key}",

@@ -44,14 +44,13 @@ public static class NowyCollectionExtensions
     {
         string model_name = typeof(TModel).Name;
 
-        if (items_previous.Any(o => o.is_deleted))
+        if (false)
         {
-            items_previous = items_previous.Where(o => o.is_deleted == false).ToList();
-        }
+            if (items_previous.Any(o => o.is_deleted))
+                items_previous = items_previous.Where(o => o.is_deleted == false).ToList();
 
-        if (items_input.Any(o => o.is_deleted))
-        {
-            items_input = items_input.Where(o => o.is_deleted == false).ToList();
+            if (items_input.Any(o => o.is_deleted))
+                items_input = items_input.Where(o => o.is_deleted == false).ToList();
         }
 
         Dictionary<string, TModel> items_input_by_key = items_input.ToDictionary(o => o.GetKey(), o => o);
@@ -61,15 +60,18 @@ public static class NowyCollectionExtensions
         logger?.LogInformation("Ensure {model_name}s exist: previous = {count_items_previous}", model_name, items_previous.Count);
 
         Dictionary<string, TModel> items_to_add = items_input_by_key
+            .Where(kvp => kvp.Value.is_deleted == false)
             .Where(kvp => !items_previous_by_key.ContainsKey(kvp.Key))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
         Dictionary<string, (TModel item_original, TModel item_input)> items_to_update = items_input_by_key
+            .Where(kvp => kvp.Value.is_deleted == false)
             .Select(kvp => ( Key: kvp.Key, ValueOriginal: items_previous_by_key!.Get(kvp.Key, null), ValueInput: kvp.Value ))
             .Where(o => o.ValueOriginal is not null)
             .ToDictionary(o => o.Key, o => ( o.ValueOriginal!, o.ValueInput ));
 
         Dictionary<string, TModel> items_to_remove = items_previous_by_key
+            .Where(kvp => kvp.Value.is_deleted == false)
             .Where(kvp => !items_input_by_key.ContainsKey(kvp.Key))
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 

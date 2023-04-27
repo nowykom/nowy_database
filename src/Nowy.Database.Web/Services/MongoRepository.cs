@@ -13,6 +13,8 @@ public class MongoRepository
     private readonly IMongoClient _mongo_client;
     private readonly INowyMessageHub _message_hub;
 
+    private static SemaphoreSlim _semaphore_upsert = new SemaphoreSlim(1, 1);
+
     public MongoRepository(ILogger<MongoRepository> logger, IMongoClient mongo_client, INowyMessageHub message_hub)
     {
         _logger = logger;
@@ -134,84 +136,93 @@ public class MongoRepository
             input.Remove("disable_events");
         }
 
-        IMongoDatabase database = _mongo_client.GetDatabase(database_name) ?? throw new ArgumentNullException(nameof(database));
-        IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(entity_name) ?? throw new ArgumentNullException(nameof(collection));
+        await _semaphore_upsert.WaitAsync();
 
-        input["id"] = id;
-        this._convertFromTransfer(input);
-
-        List<FilterDefinition<BsonDocument>> filters_or = new();
-        filters_or.Add(Builders<BsonDocument>.Filter.Eq("_id", id));
-        filters_or.Add(Builders<BsonDocument>.Filter.In("_ids", new[] { id, }));
-        foreach (string id2 in input["_ids"].AsBsonArray.Values.Select(o => o.AsString))
+        try
         {
-            filters_or.Add(Builders<BsonDocument>.Filter.Eq("_id", id2));
-            filters_or.Add(Builders<BsonDocument>.Filter.In("_ids", new[] { id2, }));
-        }
+            IMongoDatabase database = _mongo_client.GetDatabase(database_name) ?? throw new ArgumentNullException(nameof(database));
+            IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(entity_name) ?? throw new ArgumentNullException(nameof(collection));
 
-        FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Or(filters_or);
+            input["id"] = id;
+            this._convertFromTransfer(input);
 
-        bool is_inserted = false;
-        bool is_updated = false;
-
-        BsonDocument? document = await collection.Find(filter).FirstOrDefaultAsync();
-        if (document is not null)
-        {
-            BsonDocument input_clone = (BsonDocument)input.DeepClone();
-            input_clone.Remove("_id");
-            await collection.UpdateOneAsync(filter, new BsonDocument
+            List<FilterDefinition<BsonDocument>> filters_or = new();
+            filters_or.Add(Builders<BsonDocument>.Filter.Eq("_id", id));
+            filters_or.Add(Builders<BsonDocument>.Filter.In("_ids", new[] { id, }));
+            foreach (string id2 in input["_ids"].AsBsonArray.Values.Select(o => o.AsString))
             {
-                ["$set"] = input_clone,
-            });
-
-            is_updated = true;
-        }
-        else
-        {
-            await collection.InsertOneAsync(input);
-
-            is_inserted = true;
-        }
-
-        document = await collection.Find(filter).FirstOrDefaultAsync();
-
-        if (!disable_events)
-        {
-            if (is_inserted)
-            {
-                CollectionEvent collection_event = new CollectionModelsInsertedEvent { DatabaseName = database_name, EntityName = entity_name, };
-                CollectionModelEvent collection_model_event = new CollectionModelInsertedEvent { DatabaseName = database_name, EntityName = entity_name, Id = id, };
-                CollectionChangedEvent collection_changed_event = new CollectionChangedEvent { DatabaseName = database_name, EntityName = entity_name, };
-
-                this._message_hub.QueueEvent(config =>
-                {
-                    config.AddValue(collection_event);
-                    config.AddValue(collection_model_event);
-                    config.AddValue(collection_changed_event);
-                });
+                filters_or.Add(Builders<BsonDocument>.Filter.Eq("_id", id2));
+                filters_or.Add(Builders<BsonDocument>.Filter.In("_ids", new[] { id2, }));
             }
 
-            if (is_updated)
+            FilterDefinition<BsonDocument> filter = Builders<BsonDocument>.Filter.Or(filters_or);
+
+            bool is_inserted = false;
+            bool is_updated = false;
+
+            BsonDocument? document = await collection.Find(filter).FirstOrDefaultAsync();
+            if (document is not null)
             {
-                CollectionEvent collection_event = new CollectionModelsUpdatedEvent { DatabaseName = database_name, EntityName = entity_name, };
-                CollectionModelEvent collection_model_event = new CollectionModelUpdatedEvent { DatabaseName = database_name, EntityName = entity_name, Id = id, };
-                CollectionChangedEvent collection_changed_event = new CollectionChangedEvent { DatabaseName = database_name, EntityName = entity_name, };
-
-                this._message_hub.QueueEvent(config =>
+                BsonDocument input_clone = (BsonDocument)input.DeepClone();
+                input_clone.Remove("_id");
+                await collection.UpdateOneAsync(filter, new BsonDocument
                 {
-                    config.AddValue(collection_event);
-                    config.AddValue(collection_model_event);
-                    config.AddValue(collection_changed_event);
+                    ["$set"] = input_clone,
                 });
+
+                is_updated = true;
             }
-        }
+            else
+            {
+                await collection.InsertOneAsync(input);
 
-        if (document is { })
+                is_inserted = true;
+            }
+
+            document = await collection.Find(filter).FirstOrDefaultAsync();
+
+            if (!disable_events)
+            {
+                if (is_inserted)
+                {
+                    CollectionEvent collection_event = new CollectionModelsInsertedEvent { DatabaseName = database_name, EntityName = entity_name, };
+                    CollectionModelEvent collection_model_event = new CollectionModelInsertedEvent { DatabaseName = database_name, EntityName = entity_name, Id = id, };
+                    CollectionChangedEvent collection_changed_event = new CollectionChangedEvent { DatabaseName = database_name, EntityName = entity_name, };
+
+                    this._message_hub.QueueEvent(config =>
+                    {
+                        config.AddValue(collection_event);
+                        config.AddValue(collection_model_event);
+                        config.AddValue(collection_changed_event);
+                    });
+                }
+
+                if (is_updated)
+                {
+                    CollectionEvent collection_event = new CollectionModelsUpdatedEvent { DatabaseName = database_name, EntityName = entity_name, };
+                    CollectionModelEvent collection_model_event = new CollectionModelUpdatedEvent { DatabaseName = database_name, EntityName = entity_name, Id = id, };
+                    CollectionChangedEvent collection_changed_event = new CollectionChangedEvent { DatabaseName = database_name, EntityName = entity_name, };
+
+                    this._message_hub.QueueEvent(config =>
+                    {
+                        config.AddValue(collection_event);
+                        config.AddValue(collection_model_event);
+                        config.AddValue(collection_changed_event);
+                    });
+                }
+            }
+
+            if (document is { })
+            {
+                _convertIntoTransfer(document);
+            }
+
+            return document;
+        }
+        finally
         {
-            _convertIntoTransfer(document);
+            _semaphore_upsert.Release();
         }
-
-        return document;
     }
 
     public async Task<BsonDocument?> DeleteAsync(string database_name, string entity_name, string id)

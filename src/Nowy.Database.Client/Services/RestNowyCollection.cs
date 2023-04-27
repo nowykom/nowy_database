@@ -142,6 +142,11 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
     {
         if (string.IsNullOrEmpty(id)) throw new ArgumentOutOfRangeException(nameof(id));
 
+        if (model is IUniqueModel unique_model)
+        {
+            model.ids = model.ids.Where(o => !o.StartsWith("UNIQUE:")).Concat(new[] { $"UNIQUE:{unique_model.GetKey()}" }).ToArray();
+        }
+
         string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{id}";
         using HttpRequestMessage request = new(HttpMethod.Post, url);
         _configureAuth(request);

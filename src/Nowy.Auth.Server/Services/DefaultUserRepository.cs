@@ -17,7 +17,7 @@ internal class DefaultUserRepository : IUserRepository
 
     public DefaultUserRepository(INowyDatabase database, DefaultUserRepositoryConfig config)
     {
-        Console.WriteLine($"DefaultUserRepository");
+        // Console.WriteLine($"DefaultUserRepository");
         _database = database;
         _config = config;
     }
@@ -25,14 +25,14 @@ internal class DefaultUserRepository : IUserRepository
 
     public async ValueTask<IUserModel?> FindUserAsync(string name)
     {
-        Console.WriteLine($"DefaultUserRepository.FindUserAsync");
+        // Console.WriteLine($"DefaultUserRepository.FindUserAsync");
         IReadOnlyList<DefaultUserModel> users = await _database.GetCollection<DefaultUserModel>(_config.DatabaseName).GetAllAsync();
         return users.FirstOrDefault(o => o.Names.Contains(name));
     }
 
     public async ValueTask<IReadOnlyList<IUserModel>> FindUsersAsync(string name)
     {
-        Console.WriteLine($"DefaultUserRepository.FindUsersAsync");
+        // Console.WriteLine($"DefaultUserRepository.FindUsersAsync");
         IReadOnlyList<DefaultUserModel> users = await _database.GetCollection<DefaultUserModel>(_config.DatabaseName).GetAllAsync();
         return users.Where(o => o.Names.Contains(name)).ToList();
     }

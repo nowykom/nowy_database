@@ -132,13 +132,13 @@ class Build : NukeBuild
         IReadOnlyCollection<AbsolutePath> package_directories = path_global_packages.GlobDirectories("*");
         foreach (AbsolutePath package_directory in package_directories)
         {
-            Console.WriteLine(package_directory.Name);
+            // Console.WriteLine(package_directory.Name);
             IReadOnlyCollection<AbsolutePath> version_directories = package_directory.GlobDirectories("*");
             List<(AbsolutePath path, DateTime date)> version_directories_with_date = new();
             foreach (AbsolutePath version_directory in version_directories)
             {
                 DateTime date = Directory.GetCreationTimeUtc(version_directory.ToString());
-                Console.WriteLine($"- {version_directory.Name} {date}");
+                // Console.WriteLine($"- {version_directory.Name} {date}");
                 version_directories_with_date.Add(( version_directory, date ));
             }
 

@@ -148,4 +148,5 @@ public sealed class UniqueKeyBuilder
 
 
     public static implicit operator string(UniqueKeyBuilder o) => o.ToString();
+
 }

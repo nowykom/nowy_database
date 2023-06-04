@@ -4,6 +4,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
   <Import Project="..\shared\Shared.props" />
@@ -31,6 +32,12 @@
     <ProjectReference Include="..\Nowy.Database.Common\Nowy.Database.Common.csproj" />
     <ProjectReference Include="..\Nowy.Database.Contract\Nowy.Database.Contract.csproj" />
     <ProjectReference Include="..\Nowy.MessageHub.Client\Nowy.MessageHub.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\.dockerignore">
+      <Link>.dockerignore</Link>
+    </Content>
   </ItemGroup>
 
 </Project>

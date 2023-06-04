@@ -53,8 +53,12 @@ public static class NowyCollectionExtensions
                 items_input = items_input.Where(o => o.is_deleted == false).ToList();
         }
 
-        Dictionary<string, TModel> items_input_by_key = items_input.ToDictionary(o => o.GetKey(), o => o);
-        Dictionary<string, TModel> items_previous_by_key = items_previous.ToDictionary(o => o.GetKey(), o => o);
+        Dictionary<string, TModel> items_input_by_key = items_input
+            .SelectMany(o => o.GetUniqueKeys().Select(k => ( k, o )))
+            .ToDictionary(pair => pair.k, pair => pair.o);
+        Dictionary<string, TModel> items_previous_by_key = items_previous
+            .SelectMany(o => o.GetUniqueKeys().Select(k => ( k, o )))
+            .ToDictionary(pair => pair.k, pair => pair.o);
 
         logger?.LogInformation("Ensure {model_name}s exist: input = {count_items_input}", model_name, items_input.Count);
         logger?.LogInformation("Ensure {model_name}s exist: previous = {count_items_previous}", model_name, items_previous.Count);
@@ -85,9 +89,9 @@ public static class NowyCollectionExtensions
             item.is_deleted = false;
 
             logger?.LogInformation(
-                "Ensure {model_name}s exist: add item: {item_key}",
+                "Ensure {model_name}s exist: add item: {@item_key}",
                 model_name,
-                item.GetKey()
+                (object)item.GetUniqueKeys()
             );
 
             await collection.UpsertAsync(item.id, item);
@@ -105,9 +109,9 @@ public static class NowyCollectionExtensions
                     item_input.is_deleted = false;
 
                     logger?.LogInformation(
-                        "Ensure {model_name}s exist: update item: {item_input}",
+                        "Ensure {model_name}s exist: update item: {@item_input}",
                         model_name,
-                        item_input.GetKey()
+                        (object)item_input.GetUniqueKeys()
                     );
 
                     update_func(item_original, item_input);
@@ -119,9 +123,9 @@ public static class NowyCollectionExtensions
                 item_input.is_deleted = false;
 
                 logger?.LogInformation(
-                    "Ensure {model_name}s exist: replace item with input: {item_input_key}",
+                    "Ensure {model_name}s exist: replace item with input: {@item_input_key}",
                     model_name,
-                    item_input.GetKey()
+                    (object)item_input.GetUniqueKeys()
                 );
 
                 await collection.UpsertAsync(item_input.id, item_input);
@@ -136,9 +140,9 @@ public static class NowyCollectionExtensions
                 if (should_softdelete_func is null || should_softdelete_func(item))
                 {
                     logger?.LogInformation(
-                        "Ensure {model_name}s exist: soft remove item: {item_key}",
+                        "Ensure {model_name}s exist: soft remove item: {@item_key}",
                         model_name,
-                        item.GetKey()
+                        (object)item.GetUniqueKeys()
                     );
 
                     await collection.UpsertAsync(item.id, item);
@@ -147,9 +151,9 @@ public static class NowyCollectionExtensions
             else if (soft_delete)
             {
                 logger?.LogInformation(
-                    "Ensure {model_name}s exist: remove item: {item_key}",
+                    "Ensure {model_name}s exist: remove item: {@item_key}",
                     model_name,
-                    item.GetKey()
+                    (object)item.GetUniqueKeys()
                 );
 
                 item.is_deleted = true;
@@ -158,9 +162,9 @@ public static class NowyCollectionExtensions
             else
             {
                 logger?.LogInformation(
-                    "Ensure {model_name}s exist: remove item: {item_key}",
+                    "Ensure {model_name}s exist: remove item: {@item_key}",
                     model_name,
-                    item.GetKey()
+                    (object)item.GetUniqueKeys()
                 );
 
                 await collection.DeleteAsync(item.id);

@@ -144,7 +144,10 @@ internal sealed class RestNowyCollection<TModel> : INowyCollection<TModel> where
 
         if (model is IUniqueModel unique_model)
         {
-            model.ids = model.ids.Where(o => !o.StartsWith("UNIQUE:")).Concat(new[] { $"UNIQUE:{unique_model.GetKey()}" }).ToArray();
+            model.ids = model.ids
+                .Where(o => !o.StartsWith("UNIQUE:"))
+                .Concat(unique_model.GetUniqueKeys().Select(k => $"UNIQUE:{k}"))
+                .ToArray();
         }
 
         string url = $"{_endpoint}/api/v1/{_database_name}/{_entity_name}/{id}";

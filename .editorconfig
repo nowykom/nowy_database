@@ -33,6 +33,9 @@ dotnet_style_qualification_for_field = false:none
 dotnet_style_qualification_for_method = false:none
 dotnet_style_qualification_for_property = false:none
 
+# ReSharper properties
+resharper_max_attribute_length_for_same_line = 180
+
 # Solution Files
 [*.sln]
 end_of_line = crlf

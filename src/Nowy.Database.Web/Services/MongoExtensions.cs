@@ -17,6 +17,14 @@ public static class MongoExtensions
     {
         MemoryStream stream = new();
 
+        await MongoToJsonStream(list, stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
+        return stream;
+    }
+
+    public static async Task MongoToJsonStream(this IReadOnlyList<BsonDocument> list, Stream stream)
+    {
         await using StreamWriter writer = new(stream, leaveOpen: true);
         await writer.WriteAsync("[");
         await writer.FlushAsync();
@@ -29,9 +37,9 @@ public static class MongoExtensions
             await writer.FlushAsync();
             sep = ",";
 
-            using (JsonWriter bsonWriter = new JsonWriter(writer, _json_writer_settings))
+            using (JsonWriter bson_writer = new JsonWriter(writer, _json_writer_settings))
             {
-                BsonSerializationContext? context = BsonSerializationContext.CreateRoot(bsonWriter);
+                BsonSerializationContext? context = BsonSerializationContext.CreateRoot(bson_writer);
                 serializer.Serialize(context, args: default, document);
             }
 
@@ -40,9 +48,6 @@ public static class MongoExtensions
 
         await writer.WriteAsync("]");
         await writer.FlushAsync();
-
-        stream.Seek(0, SeekOrigin.Begin);
-        return stream;
     }
 
     public static async Task<MemoryStream> MongoToJsonStream(this BsonDocument document)

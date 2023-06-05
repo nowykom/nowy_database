@@ -27,7 +27,7 @@ public class ApiEndpointsV1
         app.MapDelete("{database_name}/{entity_name}/{id}", DeleteAsync);
     }
 
-    public async Task<Results<FileContentHttpResult, NotFound>> GetAllAsync(
+    public async Task<Results<PushStreamHttpResult, NotFound>> GetAllAsync(
         MongoRepository repo, string database_name, string entity_name
     )
     {
@@ -35,11 +35,10 @@ public class ApiEndpointsV1
 
         List<BsonDocument> list = await repo.GetAllAsync(database_name: database_name, entity_name: entity_name);
 
-        await using MemoryStream stream = await list.MongoToJsonStream();
-        return TypedResults.Bytes(stream.ToArray(), "application/json");
+        return TypedResults.Stream(async stream => { await list.MongoToJsonStream(stream); }, "application/json");
     }
 
-    public async Task<Results<FileContentHttpResult, NotFound>> GetByFilterAsync(
+    public async Task<Results<PushStreamHttpResult, NotFound>> GetByFilterAsync(
         MongoRepository repo, string database_name, string entity_name, string filter_json
     )
     {
@@ -49,8 +48,7 @@ public class ApiEndpointsV1
 
         List<BsonDocument> list = await repo.GetByFilterAsync(database_name: database_name, entity_name: entity_name, filter: filter);
 
-        await using MemoryStream stream = await list.MongoToJsonStream();
-        return TypedResults.Bytes(stream.ToArray(), "application/json");
+        return TypedResults.Stream(async stream => { await list.MongoToJsonStream(stream); }, "application/json");
     }
 
     public async Task<Results<FileContentHttpResult, NoContent, NotFound>> GetByIdAsync(

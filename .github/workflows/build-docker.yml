@@ -10,8 +10,9 @@ on:
     paths:
       - 'src/Nowy.Database*/**'
       - 'src/Nowy.Auth*/**'
+      - 'src/build-docker.sh'
       - 'nukebuild/**'
-      - '.github/workflows/build-docker-database.yml'
+      - '.github/workflows/build-docker.yml'
   workflow_dispatch:
 
 permissions:

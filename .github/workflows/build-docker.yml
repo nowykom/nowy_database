@@ -1,7 +1,6 @@
-name: Nowy Database
+name: Build Docker
 
 env:
-  DOTNET_VERSION: '7.0.304'                 # set this to the .NET Core version to use
   BRANCH: ${{ github.ref_name }}
 
 on:

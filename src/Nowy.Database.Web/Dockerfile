@@ -13,7 +13,7 @@ RUN dotnet msbuild "Nowy.Database.Web/Nowy.Database.Web.csproj" /t:build /p:Conf
 FROM build AS publish
 COPY src/Nowy.Database.Web /app/publish
 RUN dotnet publish -c Release -r linux-x64 -o /app/publish "Nowy.Database.Web/Nowy.Database.Web.csproj"
-RUN ls -lh /app/publish/wwwroot
+RUN ls -lh /app/publish/
 
 FROM base AS final
 WORKDIR /app

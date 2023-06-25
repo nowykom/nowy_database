@@ -11,7 +11,7 @@ on:
       - 'src/Nowy.Database*/**'
       - 'src/Nowy.Auth*/**'
       - 'nukebuild/**'
-      - '.github/workflows/deploy-database.yml'
+      - '.github/workflows/build-docker-database.yml'
   workflow_dispatch:
 
 permissions:

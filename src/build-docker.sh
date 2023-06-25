@@ -4,6 +4,5 @@ docker image build -f Nowy.Database.Web/Dockerfile .. -t tobiasschulzdev/nowy_da
 
 docker push tobiasschulzdev/nowy_database:latest
 
-ssh -o StrictHostKeyChecking=no root@mercury.leuchtraketen.cloud 'kubectl rollout restart deployment/trustitution-admin-web'
-ssh -o StrictHostKeyChecking=no root@mercury.leuchtraketen.cloud 'kubectl rollout restart deployment/trustitution-transfer-ladies'
+ssh -o StrictHostKeyChecking=no root@mercury.leuchtraketen.cloud 'kubectl rollout restart deploy -n nowy_database'
 

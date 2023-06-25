@@ -1,0 +1,43 @@
+name: Nowy Database
+
+env:
+  DOTNET_VERSION: '7.0.304'                 # set this to the .NET Core version to use
+  BRANCH: ${{ github.ref_name }}
+
+on:
+  push:
+    branches: [ "main", "tobias" ]
+    paths:
+      - 'src/Nowy.Database*/**'
+      - 'src/Nowy.Auth*/**'
+      - 'nukebuild/**'
+      - '.github/workflows/deploy-database.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: nowy_database
+
+      - name: Docker build
+        run: cd nowy_database/src; sudo bash build-docker.sh
+        env:
+          NuGetAzureDevOpsPassword: ${{ secrets.NUGET_AZUREDEVOPS_PASSWORD }}
+          NuGetOrgApiKey: ${{ secrets.NUGET_ORG_APIKEY }}
+
+      - name: Cleanup
+        if: always()
+        run: rm -rf nowy_database
+
+      - name: Docker Prune
+        if: always()
+        run: sudo docker system prune -af
+
+

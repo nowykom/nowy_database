@@ -36,8 +36,8 @@ jobs:
         if: always()
         run: rm -rf nowy_database
 
-      - name: Docker Prune
-        if: always()
-        run: sudo docker system prune -af
+#      - name: Docker Prune
+#        if: always()
+#        run: sudo docker system prune -af
 
 

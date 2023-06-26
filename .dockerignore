@@ -1,0 +1,10 @@
+**/global-packages
+**/bin
+**/obj
+**/logs
+**/.vs
+**/.idea
+**/build*.sh
+**/.dockerignore
+**/*.yaml
+**/Dockerfile

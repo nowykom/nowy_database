@@ -29,10 +29,7 @@ builder.Host.UseSerilog((context, services, configuration) => configuration
     .ReadFrom.Services(services)
     .Enrich.FromLogContext());
 
-builder.Services.Configure<KestrelServerOptions>(options =>
-{
-    options.AllowSynchronousIO = true;
-});
+builder.Services.Configure<KestrelServerOptions>(options => { options.AllowSynchronousIO = true; });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -50,6 +47,20 @@ builder.Services.AddNowyMessageHubClient(config =>
 {
     config.AddEndpoint("https://main.messagehub.schulz.dev");
     config.AddEndpoint("https://main.messagehub.nowykom.de");
+
+    string[] messagehub_urls = new[]
+        {
+            Environment.GetEnvironmentVariable("NOWY_MESSAGEHUB_URLS") ?? string.Empty,
+            Environment.GetEnvironmentVariable("LR_MESSAGEHUB_URLS") ?? string.Empty,
+        }
+        .SelectMany(s => s.Split(','))
+        .Where(o => !string.IsNullOrEmpty(o))
+        .ToArray();
+
+    foreach (string messagehub_url in messagehub_urls)
+    {
+        config.AddEndpoint(messagehub_url);
+    }
 });
 
 builder.Services.AddSingleton<ApiEndpointsV1>();

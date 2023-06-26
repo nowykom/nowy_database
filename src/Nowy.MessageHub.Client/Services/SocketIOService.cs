@@ -30,6 +30,8 @@ internal sealed class SocketIOService : BackgroundService
         List<EndpointEntry> clients = new();
         foreach (NowyMessageHubEndpointConfig endpoint_config in config.Endpoints)
         {
+            this._logger.LogInformation("Use MessageHub Endpoint: {messagehub_url}", endpoint_config.Url);
+
             SocketIO client = new SocketIO(endpoint_config.Url, new SocketIOOptions
             {
                 Reconnection = true,
